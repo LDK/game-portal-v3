@@ -29,6 +29,5 @@ urlpatterns = [
     path("components/", views.components, name="components"),
     path("accounts/profile/", views.profile, name="profile"),
     path("settings/", views.settings, name="settings"),
-    path("upload-profile-image/", views.upload_profile_image, name="upload_profile_image"),
     path("api/", include("engine.api_urls")),
 ]

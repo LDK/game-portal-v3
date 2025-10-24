@@ -32,21 +32,6 @@ def generate_user_secret_key(length=64):
 	return ''.join(secrets.choice(characters) for _ in range(length))
 
 @require_http_methods(["POST"])
-def upload_profile_image(request):
-	if not request.user.is_authenticated:
-		return redirect("login_or_register")
-
-	form = UserProfileImageForm(request.POST, request.FILES)
-	if form.is_valid():
-		print("Form is valid:", form.cleaned_data)
-		profile = UserProfile.objects.get(user=request.user)
-		profile.profile_image = form.cleaned_data.get('profile_image')
-		profile.save()
-	else:
-		print("Form errors:", form.errors)
-	return redirect("settings")
-
-@require_http_methods(["POST"])
 def register(request):
 	form = UserProfileForm(request.POST)
 	if form.is_valid():
@@ -90,14 +75,43 @@ def login_or_register(request):
 	csrfToken = request.META.get("CSRF_COOKIE", "")
 	return render(request, "login-or-register.html", {"csrfToken": csrfToken})
 
+@require_http_methods(["GET", "POST"])
 def settings(request):
-	user = request.user if request.user.is_authenticated else None
+	if not request.user.is_authenticated:
+		return redirect("login_or_register")
+
+	user = request.user
 	profile = UserProfile.objects.get(user=user) if user else None
 	csrfToken = request.META.get("CSRF_COOKIE", "")
-	context = {
-		"username": user.username if user else "guest",
-		"profile": profile,
-		"page": "settings",
-		"csrfToken": csrfToken,
-	}
+
+	if request.method == "POST":
+		form = UserProfileForm(request.POST, instance=profile)
+		if form.is_valid():
+			first_name = form.cleaned_data.get('first_name')
+			last_name = form.cleaned_data.get('last_name')
+
+			if first_name:
+				user.first_name = first_name
+			if last_name:
+				user.last_name = last_name
+			user.save()
+			profile = form.save(commit=False)
+			profile.user = user
+			profile.save()
+			return redirect("settings")
+		else:
+			context = {
+				"username": user.username if user else "guest",
+				"profile": profile,
+				"page": "settings",
+				"form_errors": form.errors,
+				"csrfToken": csrfToken,
+			}
+	else:
+		context = {
+			"username": user.username if user else "guest",
+			"profile": profile,
+			"page": "settings",
+			"csrfToken": csrfToken,
+		}
 	return render(request, "index.html", context)

@@ -5,3 +5,7 @@
 @layer base {
     @import "tailwindcss/preflight";
 }
+
+.border-white {
+    border-color: white;
+}

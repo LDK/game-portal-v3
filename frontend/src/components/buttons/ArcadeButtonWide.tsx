@@ -1,20 +1,8 @@
 import { Box, Text } from '@mantine/core';
-import type { ColorName, ColorLevel, BackgroundColor, TextColor } from '../../tailwind-colors';
+import type { BackgroundColor, TextColor } from '../../tailwind-colors';
+import type { ArcadeButtonProps } from './ArcadeButton';
 
-export interface ArcadeButtonProps {
-  color?: ColorName | 'black' | 'white' | 'transparent';
-  href?: string;
-  label: string;
-  hoverLevel?: ColorLevel;
-  size?: 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-	textSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
-  type?: 'button' | 'submit' | 'reset';
-  callback?: () => void;
-}
-
-export function ArcadeButton({
+export function ArcadeButtonWide({
   color = 'gray',
   href,
   label,
@@ -26,9 +14,7 @@ export function ArcadeButton({
   type = 'button',
   callback,
 }: ArcadeButtonProps) {
-	// const buttonSize = size === 'sm' ? 'w-12 h-12' : size === 'lg' ? 'w-20 h-20' : 'w-16 h-16';
-  // const buttonBorderSize = size === 'sm' ? '1px' : size === 'lg' ? '2px' : '1.5px';
-	let buttonSize = 'w-16 h-16';
+	let buttonSize = 'h-12';
 	let buttonBorderSize = '1.5px';
 	let buttonDistance = '-8px';
 	let buttonHoverDistance = '-7px';
@@ -37,7 +23,7 @@ export function ArcadeButton({
 
 	switch (size) {
 		case 'sm':
-			buttonSize = 'w-12 h-12';
+			buttonSize = 'h-12';
 			buttonBorderSize = '1px';
 			buttonDistance = '-6px';
 			buttonHoverDistance = '-5px';
@@ -47,7 +33,7 @@ export function ArcadeButton({
 
 			break;
 		case 'lg':
-			buttonSize = 'w-20 h-20';
+			buttonSize = 'h-20';
 			buttonBorderSize = '2px';
 			buttonDistance = '-10px';
 			buttonHoverDistance = '-9px';
@@ -58,7 +44,7 @@ export function ArcadeButton({
 			break;
 		case 'md':
 		default:
-			buttonSize = 'w-16 h-16';
+			buttonSize = 'h-12';
 			buttonBorderSize = '1.5px';
 			break;
 	}
@@ -144,22 +130,25 @@ export function ArcadeButton({
   };
 
   return (    
-    <Box component="button" type={type} className={className} ff="monospace" style={{
+    <Box className={className} component="button" type={type} role="button" ff="monospace" style={{
 			filter: disabled ? 'grayscale(1) brightness(0.75)' : 'contrast(1.25) brightness(.90)'
 		}}>
-      <a onClick={handleClick} rel="noopener noreferrer" className={`cursor-pointer justify-items-center ${wellColor} !no-underline border-black border-[${buttonBorderSize}] ${textClass} relative top-[2px] ${buttonSize} rounded-[50%] inline-block border-button text-center group disabled:opacity-50 disabled:cursor-not-allowed  group`} target="">
+      <a onClick={handleClick} rel="noopener noreferrer" className={`cursor-pointer justify-items-center ${wellColor} !no-underline border-black border-[${buttonBorderSize}] ${textClass} relative top-[2px] ${buttonSize} rounded-[10%] inline-block border-button text-center group disabled:opacity-50 disabled:cursor-not-allowed  group`} target="">
         <Text
           size={fontSize}
           ff="monospace"
           fw={700}
+          px={16}
           className={`
+            px-2
+            font-bold
             relative flex items-center justify-center
             ${buttonSize}
             ${buttonColor} 
             hover:${hoverColor}${hoverOpacity}
             active:${activeColor}${hoverOpacity}
             border-black border-[1.5px]
-            rounded-[50%] font-bold
+            rounded-[10%] font-bold
             transition-all duration-100
             translate-y-[${buttonDistance}]
             hover:translate-y-[${buttonHoverDistance}]
@@ -172,7 +161,7 @@ export function ArcadeButton({
             overflow-hidden
           `}
         >
-          <span className="absolute inset-0 rounded-[50%] pointer-events-none opacity-20"
+          <span className="absolute inset-0 rounded-[10%] pointer-events-none opacity-20"
             style={{
               backgroundImage: `
                 repeating-linear-gradient(

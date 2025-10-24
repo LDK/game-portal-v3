@@ -7,6 +7,7 @@ class UserProfile(models.Model):
     public_listing = models.BooleanField(default=False)
     secret_key = models.CharField(max_length=64, blank=True, null=True)
     profile_image = models.URLField(blank=True, null=True)
+    over_18 = models.BooleanField(default=False)
 
     def __str__(self):
         return self.display_name or self.user.username

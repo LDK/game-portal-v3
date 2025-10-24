@@ -1,14 +1,18 @@
-import { Title, Grid, Box, Button } from "@mantine/core";
+import { Title, Grid, LoadingOverlay } from "@mantine/core";
 import { Fragment } from "react/jsx-runtime";
-import FeltSection from "../components/FeltSection";
 import { useEffect, useMemo, useCallback, useState } from "react";
+import type { User } from "../../types/user";
+import InfoSection from "./sections/InfoSection";
+import PasswordSection from "./sections/PasswordSection";
+import ProfileImageSection from "./sections/ProfileImageSection";
+import SettingsSection from "./sections/SettingsSection";
 
 interface SettingsPageProps {
   csrfToken: string;
 }
 
 const useUserProfile = () => {
-  const [profile, setProfile] = useState<{ profile_image: string | null } | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
 
   useEffect(() => {
     fetch("/api/userprofiles/me/")
@@ -22,12 +26,17 @@ const useUserProfile = () => {
 
 const SettingsPage = ({ csrfToken }: SettingsPageProps) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const userProfile = useUserProfile();
 
   useEffect(() => {
-    if (userProfile && userProfile.profile_image) {
-      setImageUrl(userProfile.profile_image);
+    if (userProfile) {
+      setLoading(false);
+
+      if (userProfile.profile_image) {
+        setImageUrl(userProfile.profile_image);
+      }
     }
   }, [userProfile]);
 
@@ -40,7 +49,6 @@ const SettingsPage = ({ csrfToken }: SettingsPageProps) => {
   useEffect(() => {
     if (cloudinary) {
       cloudinary.setCloudName("ddlsyquzw"); // your Cloudinary cloud name
-      console.log("Cloudinary configured", cloudinary);
     }
   }, [cloudinary]);
 
@@ -93,35 +101,34 @@ const SettingsPage = ({ csrfToken }: SettingsPageProps) => {
     widget.open();
   }, [cloudinary, csrfToken]);
 
+  const onClearImage = useCallback(() => {
+    setImageUrl(null);
+    fetch("/api/clear-profile-image/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrfToken,
+      },
+    });
+  }, [csrfToken]);
+
   return (
     <Fragment>
       <Title className="text-white" order={2}>Settings</Title>
-      <Grid columns={12} p={4}>
-        <Grid.Col span={6}>
-          <FeltSection>
-            <Box
-              my={8}
-              w="100%"
-              // h={{ base: '64px', sm: '96px', md: '128px', lg: '420px' }}
-              className="border bg-white flex items-center justify-center overflow-hidden"
-            >
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt="Profile"
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <span className="text-gray-500 text-sm">No image</span>
-              )}
-            </Box>
+      <LoadingOverlay visible={loading} />
+      { userProfile && (
+        <Grid columns={12} p={4} gutter={{ base: 0, sm: 16 }}>
+          <Grid.Col span={{ base: 12, sm: 6 }} order={{ base: 2, sm: 1 }}>
+            <ProfileImageSection {...{ imageUrl, openWidget, onClearImage }} />
+            <PasswordSection {...{ csrfToken, userProfile }} />
+          </Grid.Col>
 
-            <label className="text-white block mb-2">Profile Image</label>
-            <Button onClick={openWidget}>Upload with Cloudinary</Button>
-          </FeltSection>
-        </Grid.Col>
-        <Grid.Col span={6}></Grid.Col>
-      </Grid>
+          <Grid.Col span={{ base: 12, sm: 6 }} order={{ base: 1, sm: 2 }}>
+            <InfoSection {...{ csrfToken, userProfile }} />
+            <SettingsSection {...{ csrfToken, userProfile }} />
+          </Grid.Col>
+        </Grid>
+      ) }
     </Fragment>
   );
 };

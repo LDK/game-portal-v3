@@ -10,7 +10,8 @@ import Header from "./components/header";
 import { Container, Drawer } from "@mantine/core";
 import { useState } from "react";
 import HomePage from "./pages/Home";
-import SettingsPage from "./pages/Settings";
+import SettingsPage from "./pages/settings/index";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const rootElement = document.getElementById("root")!;
@@ -62,6 +63,7 @@ function App() {
       >
         <p>Now you've gone and opened the drawer!</p>
       </Drawer>
+      <ToastContainer />
       <Footer />
     </>
   )
