@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  dev:
+    build: .
+    volumes:
+      - .:/workspace
+    ports:
+      - "8000:8000"   # Django
+      - "5173:5173"   # Vite
+    command: tail -f /dev/null

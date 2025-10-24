@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% csrf_token %}
+  <div id="root" data-page="login" data-csrf-token="{{ csrfToken }}"></div>
+{% endblock %}

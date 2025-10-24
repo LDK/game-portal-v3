@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div id="root" data-csrf-token="{{ csrfToken }}" data-secret-key="{{ profile.secret_key }}" data-user-id="{{ user.id }}" data-username="{{ profile.display_name }}" data-page="{{ page|default:'home' }}"></div>
+{% endblock %}

@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+
+@layer base {
+    @import "tailwindcss/preflight";
+}
