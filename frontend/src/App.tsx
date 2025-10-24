@@ -48,11 +48,13 @@ function App() {
         username={username}
         menuClick={() => setDrawerOpened(true)}
       />
+
       <FeltBackground colorLevel={8} pb="72px" pt="72px">
         <Container>
           {mainContent}
         </Container>
       </FeltBackground>
+
       <Drawer
         opened={drawerOpened}
         onClose={() => setDrawerOpened(false)}
@@ -63,7 +65,9 @@ function App() {
       >
         <p>Now you've gone and opened the drawer!</p>
       </Drawer>
+
       <ToastContainer />
+
       <Footer />
     </>
   )

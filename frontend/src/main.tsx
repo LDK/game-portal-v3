@@ -30,8 +30,16 @@ const theme = createTheme({
   primaryColor: 'green',
   primaryShade: 5,
   defaultRadius: 'md',
-  other: 
-  {
+  components: {
+    Title: {
+      styles: () => ({
+        root: {
+          letterSpacing: '0.03em',
+        },
+      }),
+    },
+  },
+  other: {
     playingCardWidthXs: '80px',
     playingCardHeightXs: '112px',
     playingCardWidthSm: '100px',
