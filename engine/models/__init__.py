@@ -1,2 +1,2 @@
 from .user import UserProfile
-from .title import Title
+from .game import Title
