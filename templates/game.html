@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Rainy Days - {{ title.name }}
+{% if game_id %} - Game #{{ game_id }}{% endif %}
+{% if subtitle %} - {{ subtitle }}{% endif %}
+{% endblock %}
+
+{% block content %}
+  <div id="root" data-csrf-token="{{ csrfToken }}" data-secret-key="{{ profile.secret_key }}" data-user-id="{{ user.id }}" data-username="{{ profile.display_name }}" data-title="{{ title.slug }}" data-game-id="{{ game_id }}" data-section="{{ section }}" data-page="game"></div>
+{% endblock %}

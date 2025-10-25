@@ -30,4 +30,5 @@ urlpatterns = [
     path("accounts/profile/", views.profile, name="profile"),
     path("settings/", views.settings, name="settings"),
     path("api/", include("engine.api_urls")),
+    path("", include("engine.games.urls")),
 ]

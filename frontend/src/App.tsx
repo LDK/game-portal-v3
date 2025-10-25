@@ -12,6 +12,7 @@ import { useState } from "react";
 import HomePage from "./pages/Home";
 import SettingsPage from "./pages/settings/index";
 import { ToastContainer } from "react-toastify";
+import GamePage from "./pages/Game";
 
 function App() {
   const rootElement = document.getElementById("root")!;
@@ -24,6 +25,9 @@ function App() {
 
   let mainContent = <></>;
   const csrfToken = rootElement.getAttribute("data-csrf-token") || "";
+  const title = rootElement.getAttribute("data-title") || "";
+  const gameId = rootElement.getAttribute("data-game-id") || undefined;
+  const section = rootElement.getAttribute("data-section") || undefined;
 
   switch (page) {
     case "login":
@@ -34,6 +38,9 @@ function App() {
       break;
     case "settings":
       mainContent = <SettingsPage csrfToken={csrfToken} />;
+      break;
+    case "game":
+      mainContent = <GamePage {...{ gameId, title, section }} />;
       break;
     default:
       // Render default content or redirect

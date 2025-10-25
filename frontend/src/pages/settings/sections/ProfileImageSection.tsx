@@ -31,7 +31,7 @@ const ProfileImageSection = ({ imageUrl, openWidget, onClearImage }: ProfileImag
 
     <Box className="text-end w-full py-1">
     <ArcadeButtonWide className="mr-2" textSize="sm" color="lime" label="Upload Image" callback={openWidget} />
-    <ArcadeButtonWide textSize="sm" color="red" label="Clear Image" callback={onClearImage} />
+    <ArcadeButtonWide textSize="sm" color="rose" label="Clear Image" callback={onClearImage} />
     </Box>
 	</FeltSection>
 );
