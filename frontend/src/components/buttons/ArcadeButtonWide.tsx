@@ -23,13 +23,13 @@ export function ArcadeButtonWide({
 
 	switch (size) {
 		case 'sm':
-			buttonSize = 'h-12';
+			buttonSize = 'h-8';
 			buttonBorderSize = '1px';
 			buttonDistance = '-6px';
 			buttonHoverDistance = '-5px';
 			pressedDistance = '-2px';
 
-			if (!textSize) { fontSize = 'xs'; }
+			if (!textSize) { fontSize = 'sm'; }
 
 			break;
 		case 'lg':

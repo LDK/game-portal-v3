@@ -15,6 +15,8 @@ def index(request):
         "username": user.username if user else None,
         "profile": profile,
         "title": title,
+        "csrfToken": request.COOKIES.get('csrftoken'),
+        "section": "index",
     }
     return render(request, "game.html", context)
 
@@ -27,6 +29,7 @@ def game_view(request, game_id):
         "username": user.username if user else None,
         "profile": profile,
         "title": title,
+        "csrfToken": request.COOKIES.get('csrftoken'),
         "game_id": game_id,
         "section": "game",
     }

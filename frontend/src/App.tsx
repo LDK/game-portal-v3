@@ -7,12 +7,13 @@ import ComponentsDemoPage from "./pages/ComponentsDemo";
 import FeltBackground from "./components/FeltBackground";
 import LoginRegisterPage from "./pages/LoginRegister";
 import Header from "./components/header";
-import { Container, Drawer } from "@mantine/core";
+import { Container } from "@mantine/core";
 import { useState } from "react";
 import HomePage from "./pages/Home";
 import SettingsPage from "./pages/settings/index";
 import { ToastContainer } from "react-toastify";
 import GamePage from "./pages/Game";
+import SideMenu from "./components/SideMenu";
 
 function App() {
   const rootElement = document.getElementById("root")!;
@@ -40,7 +41,7 @@ function App() {
       mainContent = <SettingsPage csrfToken={csrfToken} />;
       break;
     case "game":
-      mainContent = <GamePage {...{ gameId, title, section }} />;
+      mainContent = <GamePage {...{ gameId, title, section, csrfToken }} />;
       break;
     default:
       // Render default content or redirect
@@ -62,16 +63,7 @@ function App() {
         </Container>
       </FeltBackground>
 
-      <Drawer
-        opened={drawerOpened}
-        onClose={() => setDrawerOpened(false)}
-        title="Menu"
-        padding="md"
-        position="right"
-        size="md"
-      >
-        <p>Now you've gone and opened the drawer!</p>
-      </Drawer>
+      <SideMenu drawerOpened={drawerOpened} setDrawerOpened={setDrawerOpened} />
 
       <ToastContainer />
 

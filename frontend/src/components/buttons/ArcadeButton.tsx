@@ -12,6 +12,7 @@ export interface ArcadeButtonProps {
   className?: string;
   type?: 'button' | 'submit' | 'reset';
   callback?: () => void;
+  ml?: number;
 }
 
 export function ArcadeButton({

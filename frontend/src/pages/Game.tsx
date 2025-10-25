@@ -5,15 +5,16 @@ interface GamePageProps {
   title: string;
   gameId?: string;
   section?: string;
+  csrfToken: string;
 };
 
-const GamePage = ({ title, gameId, section }: GamePageProps) => {
+const GamePage = ({ title, gameId, section, csrfToken }: GamePageProps) => {
   let mainContent = <div>Game not found.</div>;
-  const gameProps = { gameId, section };
+  const gameProps = { gameId, section, csrfToken };
 
   switch (title) {
     case "ohno":
-      mainContent = <OhNo {...gameProps} />;
+      mainContent = <OhNo.index {...gameProps} />;
       break;
     default:
       break;
