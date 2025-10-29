@@ -1,6 +1,6 @@
 import { Box } from "@mantine/core";
 import { ArcadeButtonWide } from "../../../components/buttons/ArcadeButtonWide";
-import FeltSection from "../../../components/FeltSection";
+import SolidSection from "../../../components/layout/SolidSection";
 
 interface ProfileImageSectionProps {
 	imageUrl: string | null;
@@ -9,7 +9,7 @@ interface ProfileImageSectionProps {
 }
 
 const ProfileImageSection = ({ imageUrl, openWidget, onClearImage }: ProfileImageSectionProps) => (
-	<FeltSection>
+	<SolidSection>
     <label className="text-white block my-2 font-bold">Profile Image</label>
     <Box
 			my={8}
@@ -33,7 +33,7 @@ const ProfileImageSection = ({ imageUrl, openWidget, onClearImage }: ProfileImag
     <ArcadeButtonWide className="mr-2" textSize="sm" color="lime" label="Upload Image" callback={openWidget} />
     <ArcadeButtonWide textSize="sm" color="rose" label="Clear Image" callback={onClearImage} />
     </Box>
-	</FeltSection>
+	</SolidSection>
 );
 
 export default ProfileImageSection;

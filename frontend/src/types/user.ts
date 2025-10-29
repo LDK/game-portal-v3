@@ -1,3 +1,5 @@
+import type { Game } from "./game";
+
 export interface User {
     id: string;
     email: string;
@@ -8,4 +10,5 @@ export interface User {
     first_name: string;
     last_name: string;
     profile_image: string | null;
+    games?: Game[];
 };

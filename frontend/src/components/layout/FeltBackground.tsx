@@ -1,7 +1,7 @@
 import { Box } from "@mantine/core";
-import type { ColorName } from "../tailwind-colors";
+import type { ColorName } from "../../tailwind-colors";
 
-const FeltBackground = ({ children, color = 'green', colorLevel = 6, height = 'auto', mb = '4', mt = '0', pb = '4', pt = '0' }: { children: React.ReactNode, color?: ColorName, colorLevel?: number, height?: string, mb?: string | number, mt?: string | number, pb?: string | number, pt?: string | number }) => {
+const FeltBackground = ({ children, color = 'green', colorLevel = 6, height = 'auto', mb = '0', mt = '0', pb = '4', pt = '0' }: { children: React.ReactNode, color?: ColorName, colorLevel?: number, height?: string, mb?: string | number, mt?: string | number, pb?: string | number, pt?: string | number }) => {
   const baseColor = `var(--color-${color}-${colorLevel}00)`;
   const fadeColor = 'rgba(12, 20, 7, 0.5)';
 

@@ -1,7 +1,7 @@
 import { Card, Group, Switch, Divider, Text, Box } from "@mantine/core";
 import { Fragment } from "react/jsx-runtime";
 import { ArcadeButtonWide } from "../../../components/buttons/ArcadeButtonWide";
-import FeltSection from "../../../components/FeltSection";
+import SolidSection from "../../../components/layout/SolidSection";
 import type { SettingsSectionProps } from "../Section";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -25,7 +25,7 @@ const SettingsSection = ({ csrfToken, userProfile }: SettingsSectionProps) => {
 		});
 	};
 	return (
-		<FeltSection color="cyan" colorLevel={6}>
+		<SolidSection color="cyan" colorLevel={6}>
 			<label className="text-white block my-2 font-bold">Account Settings</label>
 			<form onSubmit={handleSubmit}>
 				<input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
@@ -73,7 +73,7 @@ const SettingsSection = ({ csrfToken, userProfile }: SettingsSectionProps) => {
 					</Box>
 				</Card>
 			</form>
-		</FeltSection>
+		</SolidSection>
 	);
 };
 

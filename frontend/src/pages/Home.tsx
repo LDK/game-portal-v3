@@ -1,6 +1,6 @@
 import { Title } from "@mantine/core";
 import { Fragment } from "react/jsx-runtime";
-import FeltSection from "../components/FeltSection";
+import FeltSection from "../components/layout/FeltSection";
 
 const HomePage = () => {
   return (

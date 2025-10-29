@@ -108,8 +108,8 @@ def init_cards(game:Game, player:GamePlayer) -> Tuple[List[str], List[str], str]
 		random.shuffle(deck)
 		current = deck.pop()
 
-	discardPile = [current]
+	discard_pile = [current]
 
 	GameLog.objects.create(game=game, player=player, action='to', specifics={'card': cardInfo(current)})
 
-	return deck, discardPile, current
+	return deck, discard_pile, current

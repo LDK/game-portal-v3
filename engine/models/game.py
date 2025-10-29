@@ -14,7 +14,7 @@ class Title(models.Model):
 		return Game.objects.filter(title=self, ended_at__isnull=True, cancelled_at__isnull=True, invite_only=False, password__isnull=True)
 
 	def __str__(self):
-			return self.name
+		return self.name
 
 class Game(models.Model):
 	title = models.ForeignKey(Title, on_delete=models.CASCADE)
@@ -31,6 +31,7 @@ class Game(models.Model):
 	max_players = models.IntegerField(default=4)
 	invite_only = models.BooleanField(default=False)
 	password = models.CharField(max_length=100, blank=True, null=True)
+	specifics = models.JSONField(default=dict, blank=True)
 
 	@property
 	def players(self):
@@ -78,7 +79,6 @@ class GameLog(models.Model):
 	game = models.ForeignKey('Game', on_delete=models.CASCADE)
 	player = models.ForeignKey('GamePlayer', on_delete=models.CASCADE, blank=True, null=True)
 	action = models.CharField(max_length=200)
-	details = models.JSONField(default=dict, blank=True)
 	timestamp = models.DateTimeField(auto_now_add=True)
 	specifics = models.JSONField(default=dict, blank=True)
 

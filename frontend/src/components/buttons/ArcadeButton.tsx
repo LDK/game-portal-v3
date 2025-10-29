@@ -1,10 +1,11 @@
 import { Box, Text } from '@mantine/core';
 import type { ColorName, ColorLevel, BackgroundColor, TextColor } from '../../tailwind-colors';
+import type React from 'react';
 
 export interface ArcadeButtonProps {
   color?: ColorName | 'black' | 'white' | 'transparent';
   href?: string;
-  label: string;
+  label: string | React.ReactNode;
   hoverLevel?: ColorLevel;
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
@@ -70,7 +71,7 @@ export function ArcadeButton({
   let activeColor: BackgroundColor = buttonColor;
   let hoverOpacity: string = '';
 	let textOpacity: string = '/80';
-	let mixBlend: string = 'mix-blend-color-dodge';
+	let mixBlend: string = 'mix-blend-normal';
 	let textClass: TextColor = 'text-gray-100';
   
   if (!disabled) {

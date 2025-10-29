@@ -9,3 +9,12 @@
 .border-white {
     border-color: white;
 }
+
+.border-none input {
+    border: none;
+}
+
+.hover\:bg-white:hover {
+    background-color: white !important;
+    color: green !important;
+}

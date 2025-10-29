@@ -3,7 +3,7 @@ import { Fragment } from "react/jsx-runtime";
 import { ArcadeButton } from "../components/buttons/ArcadeButton";
 import { PlayingCard, ClassicFace, CardBack, OhnoFace, BattleFace, CardHand, CardPack } from "../components/cards";
 import type { ColorName } from "../tailwind-colors";
-import FeltSection from "../components/FeltSection";
+import FeltSection from "../components/layout/FeltSection";
 
 const ComponentsDemoPage = () => {
   return (

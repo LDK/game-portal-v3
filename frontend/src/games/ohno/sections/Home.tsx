@@ -1,20 +1,48 @@
-import { Box, Card, Text, Title, Grid, Popover, LoadingOverlay } from "@mantine/core";
-import FeltSection from "../../../components/FeltSection"
+import { Box, Card, Text, Title, Grid, LoadingOverlay } from "@mantine/core";
 import { ArcadeButton } from "../../../components/buttons/ArcadeButton";
-import { Circle, Info } from "feather-icons-react";
 import NewGame from "../components/NewGame";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import SolidSection from "../../../components/layout/SolidSection";
+import YourGames from "../components/YourGames";
+import type { Game } from "../../../types/game";
+import type { User } from "../../../types/user";
 
 interface OhnoHomeProps {
   csrfToken: string;
+  user?: User;
 }
 
-const OhnoHome = ({ csrfToken }: OhnoHomeProps) => {
+const OhnoHome = ({ csrfToken, user }: OhnoHomeProps) => {
   const [newGameOpen, setNewGameOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [userGames, setUserGames] = useState<Game[]>([]);
+  const [moreGamesCount, setMoreGamesCount] = useState(0);
+
+  const gameListLimit = 5;
+
+  useEffect(() => {
+    console.log('user', user);
+    const fetchUserGames = async () => {
+      if (user) {
+        setLoading(true);
+        try {
+          const response = await fetch(`games/me/${gameListLimit}/`);
+          const data = await response.json();
+          setUserGames(data.games);
+          setMoreGamesCount(data.count - gameListLimit);
+        } catch (error) {
+          console.error("Error fetching user games:", error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchUserGames();
+  }, [user]);
 
   return (
-    <FeltSection color="blue" colorLevel={7}>
+    <SolidSection color="blue" colorLevel={7}>
       <NewGame {...{ newGameOpen, setNewGameOpen, setLoading, csrfToken }} />
 
       <LoadingOverlay visible={loading} />
@@ -43,7 +71,7 @@ const OhnoHome = ({ csrfToken }: OhnoHomeProps) => {
             one card left. (Although nobody can hear you through the internet...)
           </Text>
           <Box className="w-full justify-end text-right">
-            <ArcadeButton color="green" size="lg" label="START GAME" className="mt-12" callback={() => {
+            <ArcadeButton color="green" size="lg" label={<>NEW<br />GAME</>} className="mt-12" callback={() => {
               setNewGameOpen(true);
             }} />
           </Box>
@@ -52,139 +80,11 @@ const OhnoHome = ({ csrfToken }: OhnoHomeProps) => {
       
       <Box pb={12}>
         <Grid gutter="md">
-          <Grid.Col span={{ base: 12, sm: 4 }} className="text-left">
-            <Card padding="md" shadow="sm" bg="yellow.2">
-              <Title order={3} className="text-red-500 text-center mx-auto">Your Games</Title>
-              <Text mt={8} size="sm">Ongoing games where you are a player. Jump back in!</Text>
-
-              <Box h="300px" mt={8} pt={8} className="overflow-y-auto cursor-pointer">
-                {/* List user's ongoing games here */}
-                <Card pos="relative" padding="sm" bg="orange.2" shadow="xs" className="mb-2">
-                  <Grid justify="space-between" align="center">
-                    <Grid.Col span={3}>
-                      <Text size="xs" fw={600}>#12345</Text>
-                    </Grid.Col>
-                    <Grid.Col span={6} className="text-left">
-                      <Text size="xs">5 players</Text>
-                      <Text size="xs">Last play: 2hrs ago</Text>
-                    </Grid.Col>
-                    <Grid.Col span={3} className="text-right">
-                      <Box>
-                        <Popover width={300} position="top" withArrow shadow="md" opened={true}>
-                          <Popover.Target>
-                            <Info
-                              size={16}
-                              className="text-blue-500 ml-auto"
-                              fill="white"
-                            />
-                          </Popover.Target>
-                          <Popover.Dropdown>
-                            <Text size="sm">
-                              <strong>Players:</strong> Alice, Bob, Charlie, You, Eve<br />
-                              <strong>Started:</strong> Jan 1, 2024<br />
-                              <strong>Current Turn:</strong> Charlie<br />
-                            </Text>
-                          </Popover.Dropdown>
-                        </Popover>
-                      </Box>
-                      <Box title="It's your turn!" mb={2}>
-                        <Circle
-                          size={16}
-                          className="text-green-500 ml-auto"
-                          fill="currentColor"
-                        />
-                      </Box>
-                    </Grid.Col>
-                  </Grid>
-                </Card>
-                <Card pos="relative" padding="sm" bg="orange.2" shadow="xs" className="mb-2">
-                  <Grid justify="space-between" align="center">
-                    <Grid.Col span={3}>
-                      <Text size="xs" fw={600}>#12345</Text>
-                    </Grid.Col>
-                    <Grid.Col span={6} className="text-left">
-                      <Text size="xs">5 players</Text>
-                      <Text size="xs">Last play: 2hrs ago</Text>
-                    </Grid.Col>
-                    <Grid.Col span={3} className="text-right">
-                      <Box title="It's your turn!" mb={2}>
-                        <Circle
-                          size={16}
-                          className="text-green-500 ml-auto"
-                          fill="currentColor"
-                        />
-                      </Box>
-                      <Box>
-                        <Info
-                          size={16}
-                          className="text-blue-500 ml-auto"
-                          fill="white"
-                        />
-                      </Box>
-                    </Grid.Col>
-                  </Grid>
-                </Card>
-                <Card pos="relative" padding="sm" bg="orange.2" shadow="xs" className="mb-2">
-                  <Grid justify="space-between" align="center">
-                    <Grid.Col span={3}>
-                      <Text size="xs" fw={600}>#12345</Text>
-                    </Grid.Col>
-                    <Grid.Col span={6} className="text-left">
-                      <Text size="xs">5 players</Text>
-                      <Text size="xs">Last play: 2hrs ago</Text>
-                    </Grid.Col>
-                    <Grid.Col span={3} className="text-right">
-                      <Box title="It's your turn!" mb={2}>
-                        <Circle
-                          size={16}
-                          className="text-green-500 ml-auto"
-                          fill="currentColor"
-                        />
-                      </Box>
-                      <Box>
-                        <Info
-                          size={16}
-                          className="text-blue-500 ml-auto"
-                          fill="white"
-                        />
-                      </Box>
-                    </Grid.Col>
-                  </Grid>
-                </Card>
-                <Card pos="relative" padding="sm" bg="orange.2" shadow="xs" className="mb-2">
-                  <Grid justify="space-between" align="center">
-                    <Grid.Col span={3}>
-                      <Text size="xs" fw={600}>#12345</Text>
-                    </Grid.Col>
-                    <Grid.Col span={6} className="text-left">
-                      <Text size="xs">5 players</Text>
-                      <Text size="xs">Last play: 2hrs ago</Text>
-                    </Grid.Col>
-                    <Grid.Col span={3} className="text-right">
-                      <Box title="It's your turn!" mb={2}>
-                        <Circle
-                          size={16}
-                          className="text-green-500 ml-auto"
-                          fill="currentColor"
-                        />
-                      </Box>
-                      <Box>
-                        <Info
-                          size={16}
-                          className="text-blue-500 ml-auto"
-                          fill="white"
-                        />
-                      </Box>
-                    </Grid.Col>
-                  </Grid>
-                </Card>
-
-                <Text size="sm" fw={700} className="text-center font-bolder mt-4 text-blue-600 hover:underline cursor-pointer">
-                  Plus 3 more...
-                </Text>
-              </Box>
-            </Card>
-          </Grid.Col>
+          {user && (
+            <Grid.Col span={{ base: 12, sm: 4 }} className="text-left">
+              <YourGames {...{ games: userGames, user }} />
+            </Grid.Col>
+          )}
 
           <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
             <Card padding="md" shadow="sm">
@@ -202,7 +102,7 @@ const OhnoHome = ({ csrfToken }: OhnoHomeProps) => {
           </Grid.Col>
         </Grid>
       </Box>
-    </FeltSection>
+    </SolidSection>
   );
 };
 

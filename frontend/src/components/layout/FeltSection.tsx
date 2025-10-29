@@ -1,6 +1,6 @@
 import { Box } from "@mantine/core";
 import FeltBackground from "./FeltBackground";
-import type { ColorName } from "../tailwind-colors";
+import type { ColorName } from "../../tailwind-colors";
 
 const FeltSection = ({ children, color = 'green', colorLevel = 6 }: { children: React.ReactNode, color?: ColorName, colorLevel?: number }) => {
   return (

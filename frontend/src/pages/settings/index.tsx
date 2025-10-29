@@ -1,27 +1,14 @@
 import { Title, Grid, LoadingOverlay } from "@mantine/core";
 import { Fragment } from "react/jsx-runtime";
 import { useEffect, useMemo, useCallback, useState } from "react";
-import type { User } from "../../types/user";
 import InfoSection from "./sections/InfoSection";
 import PasswordSection from "./sections/PasswordSection";
 import ProfileImageSection from "./sections/ProfileImageSection";
 import SettingsSection from "./sections/SettingsSection";
+import useUserProfile from "../../hooks/useUserProfile";
 
 interface SettingsPageProps {
   csrfToken: string;
-}
-
-const useUserProfile = () => {
-  const [profile, setProfile] = useState<User | null>(null);
-
-  useEffect(() => {
-    fetch("/api/userprofiles/me/")
-      .then((res) => res.json())
-      .then((data) => setProfile(data))
-      .catch((err) => console.error("Error fetching user profile:", err));
-  }, []);
-
-  return profile;
 }
 
 const SettingsPage = ({ csrfToken }: SettingsPageProps) => {

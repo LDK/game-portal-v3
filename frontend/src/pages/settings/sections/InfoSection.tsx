@@ -1,6 +1,6 @@
 import { Card, TextInput, Box } from "@mantine/core";
 import { ArcadeButtonWide } from "../../../components/buttons/ArcadeButtonWide";
-import FeltSection from "../../../components/FeltSection";
+import SolidSection from "../../../components/layout/SolidSection";
 import type { SettingsSectionProps } from "../Section";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -30,7 +30,7 @@ const InfoSection = ({ csrfToken, userProfile }: SettingsSectionProps) => {
 	};
 
 	return (
-		<FeltSection color="indigo" colorLevel={6}>
+		<SolidSection color="indigo" colorLevel={6}>
 				<label className="text-white block my-2 font-bold">Account Info</label>
 
 				<form onSubmit={handleSubmit} method="POST" action="/account/info/">
@@ -70,7 +70,7 @@ const InfoSection = ({ csrfToken, userProfile }: SettingsSectionProps) => {
 							</Box>
 					</Card>
 				</form>
-		</FeltSection>
+		</SolidSection>
 	);
 };
 

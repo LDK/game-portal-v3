@@ -2,28 +2,42 @@ import { Card, Popover, Grid, Box, Text } from "@mantine/core";
 import { Info, Circle } from "feather-icons-react";
 import type { Game } from "../../../types/game";
 import type { User } from "../../../types/user";
+import { useMemo, useState } from "react";
 
 const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
   const isUserTurn = game.turn_player?.user?.id === user.id;
   const lastPlayTime = (game.round > 0) ? "2hrs ago" : null; // Placeholder logic
+  const [showPopover, setShowPopover] = useState(false);
+
+  const bgColor = useMemo(() => {
+    if (isUserTurn) {
+      return "orange.2";
+    } else if (game.started) {
+      return "green.1";
+    } else {
+      return "white";
+    }
+  }, [isUserTurn, game.started]);
 
   return (
-    <Card component="a" href={`/ohno/game/${game.id}`} pos="relative" padding="sm" bg="orange.2" shadow="xs" className="mb-2">
+    <Card component="a" href={`/ohno/game/${game.id}`} pos="relative" padding="sm" bg={bgColor} shadow="xs" className="mb-2">
       <Grid justify="space-between" align="center">
         <Grid.Col span={3}>
           <Text size="xs" fw={600}>#{game.id}</Text>
         </Grid.Col>
         <Grid.Col span={6} className="text-left">
-          <Text size="xs">{game.players.length} players</Text>
+          <Text size="xs">{game.players.length}{game.started ? `/${game.max_players} players` : " players"}</Text>
           {lastPlayTime && (
             <Text size="xs">Last play: {lastPlayTime}</Text>
           )}
         </Grid.Col>
         <Grid.Col span={3} className="text-right">
           <Box>
-            <Popover width={300} position="top" withArrow shadow="md" opened={true}>
+            <Popover width={300} position="top" withArrow shadow="md" opened={showPopover} onClose={() => setShowPopover(false)}>
               <Popover.Target>
                 <Info
+                  onMouseOver={() => setShowPopover(true)}
+                  onMouseLeave={() => setShowPopover(false)}
                   size={16}
                   className="text-blue-500 ml-auto"
                   fill="white"
@@ -32,6 +46,7 @@ const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
               <Popover.Dropdown>
                 <Text size="sm">
                   <strong>Players:</strong> {game.players.map(p => p.name).join(", ")}<br />
+                  {game.started_at ? 'Started by' : 'Created by'} <strong>{game.starter}</strong><br />
                   {game.started_at && (
                     <>
                       <strong>Started:</strong> {new Date(game.started_at).toLocaleDateString()}<br />

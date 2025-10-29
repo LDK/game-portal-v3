@@ -1,6 +1,6 @@
 import { Card, Box, Text } from "@mantine/core";
 import { ArcadeButtonWide } from "../../../components/buttons/ArcadeButtonWide";
-import FeltSection from "../../../components/FeltSection";
+import SolidSection from "../../../components/layout/SolidSection";
 import type { SettingsSectionProps } from "../Section";
 import { useState } from "react";
 
@@ -8,7 +8,7 @@ const PasswordSection = ({ csrfToken }: SettingsSectionProps) => {
 	const [linkSent, setLinkSent] = useState(false);
 
 	return (
-    <FeltSection color="red" colorLevel={7}>
+    <SolidSection color="red" colorLevel={7}>
 			<label className="text-white block my-2 font-bold">Reset Password</label>
 			<form method="POST" action="/settings/">
 				<input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
@@ -35,7 +35,7 @@ const PasswordSection = ({ csrfToken }: SettingsSectionProps) => {
 					</Box>
 				</Card>
 			</form>
-    </FeltSection>
+    </SolidSection>
 	);
 };
 

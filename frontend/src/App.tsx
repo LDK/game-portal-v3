@@ -4,7 +4,7 @@ import "@mantine/core/styles.css";
 import "./App.css";
 import Footer from './components/footer';
 import ComponentsDemoPage from "./pages/ComponentsDemo";
-import FeltBackground from "./components/FeltBackground";
+import FeltBackground from "./components/layout/FeltBackground";
 import LoginRegisterPage from "./pages/LoginRegister";
 import Header from "./components/header";
 import { Container } from "@mantine/core";
@@ -14,6 +14,7 @@ import SettingsPage from "./pages/settings/index";
 import { ToastContainer } from "react-toastify";
 import GamePage from "./pages/Game";
 import SideMenu from "./components/SideMenu";
+import useUserProfile from "./hooks/useUserProfile";
 
 function App() {
   const rootElement = document.getElementById("root")!;
@@ -30,6 +31,9 @@ function App() {
   const gameId = rootElement.getAttribute("data-game-id") || undefined;
   const section = rootElement.getAttribute("data-section") || undefined;
 
+  const user = useUserProfile();
+  console.log('user', user);
+
   switch (page) {
     case "login":
       mainContent = <LoginRegisterPage csrfToken={csrfToken} />;
@@ -41,7 +45,7 @@ function App() {
       mainContent = <SettingsPage csrfToken={csrfToken} />;
       break;
     case "game":
-      mainContent = <GamePage {...{ gameId, title, section, csrfToken }} />;
+      mainContent = <GamePage {...{ gameId, title, section, csrfToken, user }} />;
       break;
     default:
       // Render default content or redirect

@@ -55,7 +55,7 @@ export function ArcadeButtonWide({
   let activeColor: BackgroundColor = buttonColor;
   let hoverOpacity: string = '';
 	let textOpacity: string = '/80';
-	let mixBlend: string = 'mix-blend-color-dodge';
+	let mixBlend: string = 'mix-blend-normal';
 	let textClass: TextColor = 'text-gray-100';
   
   if (!disabled) {
@@ -138,7 +138,7 @@ export function ArcadeButtonWide({
           size={fontSize}
           ff="monospace"
           fw={700}
-          px={16}
+          // px={16}
           className={`
             px-2
             font-bold
@@ -174,7 +174,7 @@ export function ArcadeButtonWide({
               `
             }}
           />
-          <span className={`${textClass}${textOpacity} ${mixBlend}`}>{label}</span>
+          <span className={`px-2 ${textClass}${textOpacity} ${mixBlend}`}>{label}</span>
         </Text>
       </a>
     </Box>
