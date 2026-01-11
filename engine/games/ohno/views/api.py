@@ -9,6 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
 
+def advance_until_human_turn(game):
+	while (game.current_player.is_human == False):
+		game = cpu_turn(game)
+
 class CreateNewGame(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 
@@ -133,11 +137,8 @@ class StartGame(APIView):
 		game.started_at = timezone.now()
 		game.save()
 
-		print("GAME:" , game.id, "STARTED", game.current_player)
-
-		while (game.current_player.is_human == False):
-			game = cpu_turn(game)
-			print("game after cpu turn:", game.id, "current player:", game.current_player.name if game.current_player else "None", "turn order:", game.turn_order)
+		# Advance turns until it's a human player's turn
+		advance_until_human_turn(game)
 
 		game_serializer = GameSerializer(game)
 		log_serializer = GameLogSerializer(
@@ -198,6 +199,9 @@ class WildCard(APIView):
 		from engine.games.ohno.logic import game_move
 		color = request.data.get('color')
 		game = game_move(game, current_player, 'color', 'w', color=color)
+
+		# Advance turns until it's a human player's turn
+		advance_until_human_turn(game)
 
 		# Return the updated game state
 		serializer = GameSerializer(game)
