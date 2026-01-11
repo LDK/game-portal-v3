@@ -31,8 +31,9 @@ function App() {
   const gameId = rootElement.getAttribute("data-game-id") || undefined;
   const section = rootElement.getAttribute("data-section") || undefined;
 
-  const user = useUserProfile();
-  console.log('user', user);
+  console.log('Rendering app');
+
+  const userProfile = useUserProfile();
 
   switch (page) {
     case "login":
@@ -45,7 +46,7 @@ function App() {
       mainContent = <SettingsPage csrfToken={csrfToken} />;
       break;
     case "game":
-      mainContent = <GamePage {...{ gameId, title, section, csrfToken, user }} />;
+      mainContent = <GamePage {...{ gameId, title, section, csrfToken, userProfile }} />;
       break;
     default:
       // Render default content or redirect

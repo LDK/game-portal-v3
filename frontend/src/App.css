@@ -18,3 +18,10 @@
     background-color: white !important;
     color: green !important;
 }
+
+.cpu-name::after {
+    content: "🖥️";
+    margin: 0 .25rem 0 .2rem;
+    color: var(--color-blue-600);
+    display: inline-block;
+}

@@ -3,21 +3,22 @@ import { Info, Circle } from "feather-icons-react";
 import type { Game } from "../../../types/game";
 import type { User } from "../../../types/user";
 import { useMemo, useState } from "react";
+import moment from "moment";
 
 const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
   const isUserTurn = game.turn_player?.user?.id === user.id;
-  const lastPlayTime = (game.round > 0) ? "2hrs ago" : null; // Placeholder logic
+  const lastPlayTime = (game.round > 0 && game.last_play) ? moment(game.last_play).fromNow() : null;
   const [showPopover, setShowPopover] = useState(false);
 
   const bgColor = useMemo(() => {
     if (isUserTurn) {
       return "orange.2";
-    } else if (game.started) {
+    } else if (game.started_at) {
       return "green.1";
     } else {
       return "white";
     }
-  }, [isUserTurn, game.started]);
+  }, [isUserTurn, game.started_at]);
 
   return (
     <Card component="a" href={`/ohno/game/${game.id}`} pos="relative" padding="sm" bg={bgColor} shadow="xs" className="mb-2">
@@ -26,7 +27,7 @@ const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
           <Text size="xs" fw={600}>#{game.id}</Text>
         </Grid.Col>
         <Grid.Col span={6} className="text-left">
-          <Text size="xs">{game.players.length}{game.started ? `/${game.max_players} players` : " players"}</Text>
+          <Text size="xs">{game.players.length}{!game.started_at ? `/${game.max_players} players` : ` players - Round ${game.round}`}</Text>
           {lastPlayTime && (
             <Text size="xs">Last play: {lastPlayTime}</Text>
           )}

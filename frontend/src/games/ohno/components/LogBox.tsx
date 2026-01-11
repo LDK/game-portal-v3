@@ -1,7 +1,8 @@
 import type { GameLog } from "../../../types/game";
 import { Box, Button, Text, TextInput } from "@mantine/core";
 import axios from "axios";
-import { Monitor, Send } from "feather-icons-react";
+import { Send } from "feather-icons-react";
+import { useEffect, useRef } from "react";
 
 interface LogBoxProps {
 		gameId: string;
@@ -11,56 +12,94 @@ interface LogBoxProps {
 }
 
 const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
+  const gameLogEndRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (gameLogEndRef.current) {
+      gameLogEndRef.current.scrollIntoView();
+    }
+  }, [log]);
+
   const LogEntry = ({ entry }: { entry: GameLog }) => {
     let entryText = <>{entry.player}: {entry.action}</>;
-    const nameText = <span className="font-bold">{entry.player || entry.cpu_name}&nbsp;</span>;
-    const entryTs =  new Date(entry.timestamp).toLocaleTimeString();
+    const nameText = <span className={`font-bold${entry.cpu_name ? ' cpu-name' : ''}`}>{entry.player || entry.cpu_name}</span>;
+    const entryTs =  new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    let textColor = 'black';
+
+    if (entry.specifics && (entry.specifics.color || entry.specifics.card?.group)) {
+      textColor = (entry.specifics.color || entry.specifics.card!.group).toLowerCase();
+      switch (textColor) {
+        case 'wild':
+          textColor = 'white';
+          break;
+        case 'blue':
+          textColor = 'blue.5';
+          break;
+        default:
+          break;
+      }
+    }
 
     let cardName = <></>;
 
     if (entry.specifics && entry.specifics.card) {
-      cardName = <Text c={entry.specifics.card.group} className="font-bold">{entry.specifics.card.name}</Text>;
+      cardName = <Text component="span" c={textColor} className="font-bold bg-black">{entry.specifics.card.name}</Text>;
     }
+
+    console.log(textColor, entry.specifics);
 
     switch (entry.action) {
       case 'draw':
-        entryText = <>{nameText} drew a card.</>;
+        entryText = <Text>{nameText} drew a card.</Text>;
+        break;
+      case 'draw-two':
+        entryText = <Text>{nameText} drew two cards!</Text>;
+        break;
+      case 'draw-four':
+        entryText = <Text>{nameText} drew four cards!</Text>;
         break;
       case 'join':
-        entryText = <>{nameText} joined the game.</>;
+        entryText = <Text>{nameText} joined the game.</Text>;
         break;
       case 'play':
-        entryText = <>{nameText} played a card.</>;
+        entryText = <Text>{nameText} played a&nbsp;{cardName}.</Text>;
         break;
       case 'skip':
-        entryText = <>{nameText} was skipped!</>;
+        entryText = <Text>{nameText} was skipped!</Text>;
         break;
       case 'reverse':
-        entryText = <>{nameText} reversed the order!</>;
+        entryText = <Text>Order was reversed!</Text>;
         break;
       case 'wild':
-        entryText = <>{nameText} played a Wild card!</>;
+        entryText = <Text>Waiting for {nameText} to choose a color...</Text>;
         break;
       case 'new_game':
-        entryText = <>{nameText} created a new game.</>;
+        entryText = <Text>{nameText} created a new game.</Text>;
         break;
       case 'add_cpu_player':
-        entryText = <>{nameText}<Monitor width="16px" style={{ marginRight: '.25rem' }} /> joined the game.</>;
+        entryText = <Text>{nameText} joined the game.</Text>;
         break;
       case 'game_started':
-        entryText = <>{nameText} started the game!</>;
+        entryText = <Text>{nameText} started the game!</Text>;
         break;
       case 'to':
-        entryText = <>{nameText} turned over a&nbsp;{cardName}.</>;
+        entryText = <Text display="flex">{nameText}&nbsp;turned over a&nbsp;{cardName}.</Text>;
         break;
       case 'chat':
-        entryText = <>{nameText}: {entry.specifics?.message}</>;
+        entryText = <Text>{nameText}: {entry.specifics?.message}</Text>;
+        break;
+      case 'deal_cards':
+        entryText = <Text>{nameText} dealt the cards.</Text>;
+        break;
+      case 'color':
+        entryText = <Text>{nameText} changed the color to <Text component="span" c={textColor} className="font-bold bg-black">{entry.specifics?.color}</Text>.</Text>;
         break;
     }
     return (
-      <Box className="mb-2 flex items-center">
-        <span className="text-gray-600 text-xs mr-3">{entryTs}</span>
-        {entryText}
+      <Box className="mb-2 sm:flex items-top text-left">
+        <p className="text-gray-600 w-[62px] text-xs mr-1 sm:mr-2 no-wrap md:mr-3">{entryTs}</p>
+        <Box className="flex">{entryText}</Box>
       </Box>
     );
   };
@@ -94,10 +133,11 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
   };
   return (
     <Box className="w-full bg-white rounded bg-opacity-50 text-black p-4 min-h-64 overflow-y-auto relative">
-			<Box className="w-full bg-white rounded bg-opacity-50 text-black p-4 max-h-48 overflow-y-auto relative">
+			<Box className="w-full bg-white rounded bg-opacity-50 text-black p-0 max-h-48 overflow-y-auto relative">
         {log.map((entry, index) => (
           <LogEntry key={index} entry={entry} />
         ))}
+        <div ref={gameLogEndRef} />
       </Box>
 
       <form onSubmit={handleChatSubmit}>

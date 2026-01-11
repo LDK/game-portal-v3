@@ -16,17 +16,27 @@ export interface GamePlayer {
     play_order: number;
     game_id: string;
     score?: number;
+    id: string;
+}
+
+export interface GameCard {
+    face: string;
+    group: string;
+    value: string;
+    name: string;
+    short: string;
 }
 
 export interface Game {
     id: string;
     title: GameTitle;
-    winner?: GamePlayer;
+    winners?: GamePlayer[];
     created_at: string;
     updated_at: string;
     started_at?: string;
     cancelled_at?: string;
     ended_at?: string;
+    last_play: string;
     max_players: number;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     settings: Record<string, any>;
@@ -36,19 +46,14 @@ export interface Game {
     turn_order: number;
     started?: boolean;
     starter: string;
+    current_card?: GameCard;
+    user_player_id?: string;
 };
-
-interface GameCard {
-    face: string;
-    group: string;
-    value: string;
-    name: string;
-    short: string;
-}
 
 interface LogSpecifics {
     card?: GameCard;
     message?: string;
+    color?: string;
 }
 
 export interface GameLog {

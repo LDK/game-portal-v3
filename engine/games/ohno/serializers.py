@@ -10,7 +10,7 @@ class GameSerializer(serializers.ModelSerializer):
 	class Meta:
 		model = Game
 		depth = 1
-		fields = ['id', 'title', 'starter', 'created_at', 'updated_at', 'started_at', 'cancelled_at', 'ended_at', 'settings', 'round', 'reverse_order', 'current_slot', 'max_players', 'invite_only', 'password', 'players']
+		fields = ['id', 'title', 'starter', 'created_at', 'updated_at', 'started_at', 'cancelled_at', 'ended_at', 'settings', 'round', 'reverse_order', 'turn_order', 'max_players', 'invite_only', 'password', 'players']
 		read_only_fields = ['id', 'created_at', 'updated_at']
 	
 	def get_players(self, obj):

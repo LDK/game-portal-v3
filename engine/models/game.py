@@ -27,7 +27,7 @@ class Game(models.Model):
 	settings = models.JSONField(default=dict, blank=True)
 	round = models.IntegerField(default=0)
 	reverse_order = models.BooleanField(default=False)
-	current_slot = models.IntegerField(default=0)
+	turn_order = models.IntegerField(default=0)
 	max_players = models.IntegerField(default=4)
 	invite_only = models.BooleanField(default=False)
 	password = models.CharField(max_length=100, blank=True, null=True)
@@ -39,7 +39,7 @@ class Game(models.Model):
 	
 	@property
 	def current_player(self):
-		return GamePlayer.objects.filter(game=self, is_active=True, play_order=self.current_slot).first()
+		return GamePlayer.objects.filter(game=self, is_active=True, play_order=self.turn_order).first()
 	
 	@property
 	def leaderboard(self):
@@ -52,10 +52,19 @@ class Game(models.Model):
 	@property
 	def next_slot(self):
 		total_players = self.players.count()
+		print("Initial turn order:", self.turn_order)
+		print("Reverse order:", self.reverse_order)
+		print("Total players:", total_players)
 		if self.reverse_order:
-			return (self.current_slot - 1) % total_players
+			if self.turn_order == 1:
+				return total_players
+			else:
+				return self.turn_order - 1
 		else:
-			return (self.current_slot + 1) % total_players
+			if self.turn_order == total_players:
+				return 1
+			else:
+				return self.turn_order + 1
 
 	@property
 	def next_player(self):
@@ -74,6 +83,27 @@ class GamePlayer(models.Model):
 	joined_at = models.DateTimeField(auto_now_add=True)
 	starter = models.BooleanField(default=False)
 	specifics = models.JSONField(default=dict, blank=True)
+	last_play = models.DateTimeField(blank=True, null=True)
+
+	@property
+	def name(self):
+		if self.is_human and self.user:
+			return self.user.display_name
+		else:
+			return self.cpu_name or "CPU"
+	
+	@property
+	def hand(self):
+		if not self.specifics:
+			self.specifics = {}
+		self.specifics.setdefault('cards', [])
+		return self.specifics['cards']
+
+	@hand.setter
+	def hand(self, value):
+		if not self.specifics:
+			self.specifics = {}
+		self.specifics['cards'] = value
 
 class GameLog(models.Model):
 	game = models.ForeignKey('Game', on_delete=models.CASCADE)

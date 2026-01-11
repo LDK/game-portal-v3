@@ -1,8 +1,8 @@
-from engine.games.ohno.cards import init_cards, init_deck
-from engine.games.ohno.logic import deal_cards
-from engine.games.util import get_cpu_name
+from engine.games.ohno.cards import init_cards, turnover_card
+from engine.games.ohno.logic import deal_cards, handle_card_effect, cpu_turn
+from engine.games.util import get_cpu_name, get_next_turn_order
 from engine.models.game import Game, Title, GamePlayer, GameLog
-from engine.games.ohno.serializers import GameSerializer
+from engine.games.ohno.serializers import GameLogSerializer, GameSerializer
 from engine.models.user import UserProfile
 from rest_framework import status, permissions
 from rest_framework.response import Response
@@ -50,7 +50,7 @@ class CreateNewGame(APIView):
 			game=game,
 			user=starter,
 			starter=True,
-			turn_order = 1
+			play_order = 1
 		)
 
 		# Log the game creation
@@ -83,11 +83,23 @@ class StartGame(APIView):
 				status=status.HTTP_403_FORBIDDEN,
 			)
 
+		# Shuffle the order of players
+		players = list(game.players.all())
+		import random
+		random.shuffle(players)
+
+		for index, player in enumerate(players):
+			player.play_order = index + 1
+			player.save()
+
 		# Start the game
 		game.started_at = timezone.now()
-		game.save()
+		game.round = 1
 
 		user_gp = GamePlayer.objects.filter(game=game, user=game.starter).first()
+		deck = init_cards()
+		game.specifics['deck'] = deck
+		players = game.players.all().order_by('play_order')
 
 		# Log the game start
 		GameLog.objects.create(
@@ -96,18 +108,44 @@ class StartGame(APIView):
 			player=user_gp
 		)
 
-		deck, discard_pile, current_card = init_cards(game, user_gp)
-		players = game.players.all().order_by('play_order')
-		deck, players = deal_cards(deck, players)
+		# Select a random player as the dealer and deal cards
+		dealer = random.choice(players)
+		print("Selected dealer:", dealer.name, dealer.play_order)
+
+		game.turn_order = dealer.play_order  # Set the dealer as the starting player
+		deck, players = deal_cards(deck, players, resetScore=True, dealer=dealer)
+
+		# Turn over the first card to start the discard pile
+		deck, discard_pile, current_card = turnover_card(game)
+
+		# In case the card turned over is a special card, handle its effect
+		players, game = handle_card_effect(current_card, game, first_turn=True)
 
 		game.specifics['deck'] = deck
 		game.specifics['discard_pile'] = discard_pile
 		game.specifics['current_card'] = current_card
+
+		print("Current card after effect:", game.specifics['current_card'])
+		print("Current player after effect:", game.current_player.name if game.current_player else "None")
+		print("Turn order after effect:", game.turn_order)
+
+		game.last_play = timezone.now()
+		game.started_at = timezone.now()
 		game.save()
 
-		serializer = GameSerializer(game)
-		return Response(serializer.data, status=status.HTTP_200_OK)
-	
+		print("GAME:" , game.id, "STARTED", game.current_player)
+
+		while (game.current_player.is_human == False):
+			game = cpu_turn(game)
+			print("game after cpu turn:", game.id, "current player:", game.current_player.name if game.current_player else "None", "turn order:", game.turn_order)
+
+		game_serializer = GameSerializer(game)
+		log_serializer = GameLogSerializer(
+			GameLog.objects.filter(game=game).order_by("id"),
+			many=True
+		)
+		return Response({"game": game_serializer.data, "log": log_serializer.data}, status=status.HTTP_200_OK)
+
 class GameInfo(APIView):
 	permission_classes = [permissions.AllowAny]
 
@@ -169,7 +207,11 @@ class AddCpuPlayer(APIView):
 			player=cpu_player
 		)
 
-		serializer = GameSerializer(game)
+		# Return the full game log
+		serializer = GameLogSerializer(
+			GameLog.objects.filter(game=game).order_by("id"),
+			many=True
+		)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UserGames(APIView):
@@ -186,7 +228,7 @@ class UserGames(APIView):
 			)
 
 		# Fetch the user's ongoing games
-		gps = GamePlayer.objects.filter(user=user_profile, game__ended_at__isnull=True, is_active=True)
+		gps = GamePlayer.objects.filter(user=user_profile, game__ended_at__isnull=True, is_active=True).order_by('-game__created_at')
 		games = [gp.game for gp in gps]
 		game_count = len(games)
 

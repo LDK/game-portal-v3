@@ -50,7 +50,7 @@ class GameChat(views.APIView):
             action="chat",
         )
 
-        game_logs = GameLog.objects.filter(game=game).order_by("timestamp")
+        game_logs = GameLog.objects.filter(game=game).order_by("id")
         serializer = GameLogSerializer(game_logs, many=True)
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)

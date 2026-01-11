@@ -70,19 +70,69 @@ export const CardHand = ({ fan = false, children }: { fan?: boolean, children: R
   );
 }
 
-export function OhnoFace() {
+interface OhnoFaceProps {
+  face: string;
+  color?: 'Red' | 'Yellow' | 'Green' | 'Blue' | 'Wild';
+};
+
+export function OhnoFace({ face = 'w', color = 'Wild' }: OhnoFaceProps) {
+
+  let titleText = '';
+  let colorClass = 'border-black'
+
+  switch (face) {
+    case 's':
+      titleText = 'SKIP';
+      break;
+    case 'r':
+      titleText = 'REVERSE';
+      break;
+    case 'd2':
+      titleText = 'DRAW TWO';
+      break;
+    case 'd4':
+      titleText = 'DRAW FOUR';
+      break;
+    case 'w':
+      titleText = 'WILD';
+      break;
+    default:
+      titleText = face;
+      break;
+  }
+
+  switch (color) {
+    case 'Red':
+      colorClass = 'border-red-500';
+      break;
+    case 'Yellow':
+      colorClass = 'border-yellow-500';
+      break;
+    case 'Green':
+      colorClass = 'border-green-500';
+      break;
+    case 'Blue':
+      colorClass = 'border-cyan-500';
+      break;
+    default:
+      colorClass = 'border-black';
+      break;
+  }
+
+  const cornerText = face.toUpperCase();
+
   return (
-    <Card bg="transparent" className="w-full h-full border-16 border-sky-600 rounded-lg shadow-lg transform transition-transform duration-500"
+    <Card bg="transparent" className={`w-full h-full border-16 ${colorClass} rounded-lg shadow-lg transform transition-transform duration-500`}
       style={{ transformStyle: 'preserve-3d' }}
     >
       <div className="absolute top-2 left-2 backface-hidden flex flex-col items-center justify-center">
-        <Title order={2} className="text-4xl text-sky-600">S</Title>
+        <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
       </div>
       <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center">
-        <Title component="h1" fz="h1" fw={700} ff="Raleway" order={3} className="text-4xl text-sky-600">SKIP</Title>
+        <Title component="h1" fz="h1" fw={700} ff="Raleway" order={3} className="text-4xl text-sky-600">{titleText}</Title>
       </div>
       <div className="absolute bottom-2 right-2 backface-hidden flex flex-col items-center justify-center">
-        <Title order={2} className="text-4xl text-sky-600">S</Title>
+        <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
       </div>
       <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center"
         style={{ transform: 'rotateY(180deg)' }}

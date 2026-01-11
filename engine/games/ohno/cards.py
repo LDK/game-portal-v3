@@ -1,7 +1,7 @@
 import random
 from typing import List, Tuple
 
-from engine.models.game import Game, GameLog, GamePlayer
+from engine.models.game import Game, GameLog
 
 def faceNames() -> dict:
   return {
@@ -67,7 +67,7 @@ def cardInfo(code:str) -> dict:
       'face': faceName,
       'short': face.upper(),
       'value': faceValues()[face],
-      'name': f'{groupName} {faceName}'
+      'name': f'{groupName} {faceName}' if faceName != 'Wild' else f'{faceName} Card'
     }
 
     effects = ['Skip', 'Reverse', 'Draw Two', 'Draw Four', 'Wild']
@@ -96,20 +96,41 @@ def init_deck() -> List[str]:
         deck.append('wd4')
     return deck
 
-# Return a new deck, discard pile, and current card
-def init_cards(game:Game, player:GamePlayer) -> Tuple[List[str], List[str], str]:
+# Return a new deck, shuffled.
+def init_cards() -> Tuple[List[str], List[str], str]:
 	deck = init_deck()
 	random.shuffle(deck)
-	current = deck.pop()
+	return deck
 
-	# If the first card is a Draw Four, put it back in the deck and reshuffle
-	while (current == 'wd4'):
-		deck.insert(0, current)
-		random.shuffle(deck)
-		current = deck.pop()
+def turnover_card(game:Game) -> Tuple[List[str], List[str], str]:
+    """
+    Turn over the top card of the deck to start the discard pile (only at the start of a game/round)
+    """
+    deck = game.specifics['deck'] if 'deck' in game.specifics else []
+    card = deck.pop()
 
-	discard_pile = [current]
+    valid_card = False
 
-	GameLog.objects.create(game=game, player=player, action='to', specifics={'card': cardInfo(current)})
+    # A game cannot start with a wild draw four
+    while valid_card == False:
+      if card != 'wd4':
+        # Rigging for a second...
+        card = 'w'
+        discard_pile = [card]
+        game.specifics['deck'] = deck
+        game.specifics['discard_pile'] = discard_pile
+        valid_card = True
+      else:
+        deck.insert(0, card)
+        random.shuffle(deck)
 
-	return deck, discard_pile, current
+    game.save()
+
+    GameLog.objects.create(
+      game=game,
+      action="to",
+      player=game.current_player,
+      specifics={"card": cardInfo(card)}
+    )
+
+    return deck, discard_pile, card

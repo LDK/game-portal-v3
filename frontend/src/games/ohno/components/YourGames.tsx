@@ -5,10 +5,11 @@ import YourGameListing from "./YourGameListing";
 
 interface YourGamesProps {
 	games: Game[];
-	user: User;
+	moreGamesCount: number;
+	userProfile: User;
 }
 
-const YourGames = ({ games, user }: YourGamesProps) => {
+const YourGames = ({ games, moreGamesCount, userProfile }: YourGamesProps) => {
 	return (
 		<Card padding="md" shadow="sm" bg="yellow.2">
 			<Title order={3} className="text-red-500 text-center mx-auto">Your Games</Title>
@@ -17,12 +18,14 @@ const YourGames = ({ games, user }: YourGamesProps) => {
 			<Box h="300px" mt={8} pt={8} className="overflow-y-auto cursor-pointer">
 				{/* List user's ongoing games here */}
 				{games.map((game, index) => (
-					<YourGameListing key={index} game={game} user={user} />
+					<YourGameListing key={index} game={game} user={userProfile} />
 				))}
 
-				<Text size="sm" fw={700} className="text-center font-bolder mt-4 text-blue-600 hover:underline cursor-pointer">
-					Plus 3 more...
-				</Text>
+				{moreGamesCount > 0 && (
+					<Text size="sm" fw={700} className="text-center font-bolder mt-4 text-blue-600 hover:underline cursor-pointer">
+						Plus {moreGamesCount} more...
+					</Text>
+				)}
 			</Box>
 		</Card>
 	);

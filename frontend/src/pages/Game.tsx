@@ -1,7 +1,6 @@
 // Import each game component here
 import { useEffect, useState } from "react";
 import OhNo from "../games/ohno";
-import useUserProfile from "../hooks/useUserProfile";
 import type { User } from "../types/user";
 import { LoadingOverlay } from "@mantine/core";
 
@@ -10,18 +9,17 @@ interface GamePageProps {
   gameId?: string;
   section?: string;
   csrfToken: string;
-  user?: User;
+  userProfile?: User;
 };
-
-const GamePage = ({ title, gameId, section, csrfToken, user }: GamePageProps) => {
+  
+const GamePage = ({ title, gameId, section, csrfToken, userProfile }: GamePageProps) => {
   let mainContent = <div>Game not found.</div>;
-  const gameProps = { gameId, section, csrfToken, user };
+  const gameProps = { gameId, section, csrfToken, userProfile };
   const [loading, setLoading] = useState(true);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-  const userProfile = useUserProfile();
+  const [, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    console.log('userProfile', userProfile);
     if (userProfile) {
       setLoading(false);
 
