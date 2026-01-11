@@ -163,6 +163,46 @@ class GameInfo(APIView):
 				status=status.HTTP_404_NOT_FOUND,
 			)
 
+class WildCard(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, game_id, *args, **kwargs):
+		# Look up the game
+		try:
+			game = Game.objects.get(id=game_id)
+		except Game.DoesNotExist:
+			return Response(
+				{"error": "Game not found."},
+				status=status.HTTP_404_NOT_FOUND,
+			)
+
+		# current card
+		print("Current card:", game.specifics.get('current_card'))
+
+		# Check if it's the requester's turn
+		try:
+			user_profile = UserProfile.objects.get(user=request.user)
+			current_player = game.current_player
+			if current_player.user != user_profile:
+				return Response(
+					{"error": "It's not your turn."},
+					status=status.HTTP_403_FORBIDDEN,
+				)
+		except UserProfile.DoesNotExist:
+			return Response(
+				{"error": "User profile not found."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		# Handle the wild card color choice
+		from engine.games.ohno.logic import game_move
+		color = request.data.get('color')
+		game = game_move(game, current_player, 'color', 'w', color=color)
+
+		# Return the updated game state
+		serializer = GameSerializer(game)
+		return Response(serializer.data, status=status.HTTP_200_OK)
+
 class AddCpuPlayer(APIView):
 	permission_classes = [permissions.IsAuthenticated]
 

@@ -82,7 +82,7 @@ const PlayersList = ({ players, game, csrfToken, dataCallback }: { players: Ohno
   );
 };
 
-const WildModal = ({ player, hand }: { player: OhnoPlayer; hand?: string[] }) => {
+const WildModal = ({ player, hand, csrfToken, opened }: { player: OhnoPlayer; hand?: string[]; csrfToken: string; opened?: boolean }) => {
   if (!player || !hand?.filter) return null;
 
   const colorCount = {
@@ -92,10 +92,30 @@ const WildModal = ({ player, hand }: { player: OhnoPlayer; hand?: string[] }) =>
     'Yellow': hand.filter(card => card.startsWith('y')).length,
   };
 
+  const handlePickColor = (color: string) => {
+    console.log('Picked color:', color);
+    // Implement color pick logic here, e.g., send to server
+    axios.post(`wild/`, {
+      player_id: player.id,
+      color: color,
+    }, {
+      headers: {
+        'X-CSRFToken': csrfToken, // Add CSRF token if needed
+      },
+    })
+    .then((result) => {
+      console.log('Color picked successfully:', result.data);
+      // Close modal or update state as needed
+    })
+    .catch((error) => {
+      console.error("There was an error picking the color!", error);
+    });
+  };
+
   return (
     <Modal
       size="lg"
-      opened={true}
+      opened={opened || false}
       onClose={() => {}}
       title="Choose a color"
     >
@@ -119,7 +139,7 @@ const WildModal = ({ player, hand }: { player: OhnoPlayer; hand?: string[] }) =>
 
           return (
             <Grid.Col span={6} key={color} className="text-center">
-              <Box className={`w-full h-24 bg-${boxColor}-500 rounded flex items-center justify-center cursor-pointer hover:scale-105 transform transition`} onClick={console.log}>
+              <Box className={`w-full h-24 bg-${boxColor}-500 rounded flex items-center justify-center cursor-pointer hover:scale-105 transform transition`} onClick={() => handlePickColor(color)}>
                 {color} ({colorCount[color as keyof typeof colorCount]} cards)
               </Box>
             </Grid.Col>
@@ -135,7 +155,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   const [players, setPlayers] = useState<OhnoPlayer[]>([]);
   const [userPlayerId, setUserPlayerId] = useState<string | undefined>('');
   const [game, setGame] = useState<OhnoGame | null>(null);
-  const [turnOrder, setTurnOrder] = useState<number>(1);
+  // const [turnOrder, setTurnOrder] = useState<number>(1);
 
   // User's cards
   const [hand, setHand] = useState<string[]>([]);
@@ -211,9 +231,11 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     // return () => clearInterval(interval);
   }, [gameId, log]);
 
+  console.log('wild color:', game?.wild_color);
+
   return (
     <Fragment>
-      {userPlayer && <WildModal player={userPlayer} hand={hand} />}
+      {userPlayer && <WildModal player={userPlayer} hand={hand} csrfToken={csrfToken} opened={game?.wild} />}
       <Text c="yellow" component="a" href="/ohno/" className="text-white hover:underline hover:text-yellow-400">
         &laquo; Back to Oh No! Home
       </Text>
@@ -225,7 +247,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
                 <PlayersList {...{ players, game, csrfToken, dataCallback: setLog }} />
               )}
               {(game && game.started_at) && (
-                <CurrentCard {...{ game }} />
+                <CurrentCard game={game} wildColor={game?.wild_color} />
               )}
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }} className="text-center mb-4">

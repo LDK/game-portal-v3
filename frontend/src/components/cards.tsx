@@ -197,19 +197,24 @@ export function BattleFace() {
   );
 };
 
-export function PlayingCard({ inHand, children }: { inHand?: boolean, children?: React.ReactNode }) {
+export function PlayingCard({ inHand, children, clickable = true }: { inHand?: boolean, children?: React.ReactNode, clickable?: boolean }) {
+  const hoverClass = !clickable ? 
+    `cursor-default` :
+    `
+      cursor-pointer hover:translate-y-[-2px] active:translate-y-[-1px]
+      hover:shadow-[0_6px_4px_2px_rgba(2,2,2,0.15),0_0_5px_4px_rgba(200,200,200,0.1)]
+      hover:brightness-110 hover:contrast-130
+      active:shadow-[0_7px_4px_1px_rgba(2,2,2,0.15),0_0_3px_2px_rgba(200,200,200,0.075)]
+      transition-all duration-150
+    `;
+
 	const card = (<Box mx={4} p={0}
     style={{ width: '142px', height: '200px', perspective: '1000px', transformStyle: 'preserve-3d'  }}
     className={`
         relative border-1 border-white inline-block rounded-lg bg-white
-        cursor-pointer select-none
+        select-none
+        ${hoverClass}
         shadow-[0_8px_6px_3px_rgba(2,2,2,0.15)]
-        hover:shadow-[0_6px_4px_2px_rgba(2,2,2,0.15),0_0_5px_4px_rgba(200,200,200,0.1)]
-        hover:brightness-110 hover:contrast-130
-        active:shadow-[0_7px_4px_1px_rgba(2,2,2,0.15),0_0_3px_2px_rgba(200,200,200,0.075)]
-        transition-all duration-150
-        hover:translate-y-[-2px]
-        active:translate-y-[-1px]
         bg-no-repeat bg-center bg-cover
     `}
     >

@@ -259,7 +259,7 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 		card_info = cardInfo(card)
 		top_card_info = cardInfo(top_card)
 
-		if card_info['group'] != top_card_info['group'] and card_info['face'] != top_card_info['face'] and card_info['group'] != 'Wild' and not (card_info['group'] == game.specifics['wildColor']):
+		if card_info['group'] != top_card_info['group'] and card_info['face'] != top_card_info['face'] and card_info['group'] != 'Wild' and not (card_info['group'] == game.specifics['wild_color']):
 			return game
 
 		game.specifics['discard_pile'].append(card)
@@ -345,7 +345,7 @@ def game_move(game:Game, player:GamePlayer, action:str, card:str, color:(str | N
 		elif action == 'color':
 				print("Turn order going into color change:", game.turn_order)
 				print("Next slot:", game.next_slot, 'of', len(game.players.all()))
-				game.specifics['wildColor'] = color
+				game.specifics['wild_color'] = color
 				game.specifics['wild'] = False # Reset wild status after color is chosen
 				game.turn_order = game.next_slot
 				game.save()
@@ -371,7 +371,7 @@ def cpu_turn(game:Game) -> Game:
 		discardPile = game.specifics['discard_pile']
 		top_card = discardPile[-1]
 
-		wildColor = game.specifics['wildColor'] if 'wildColor' in game.specifics else None
+		wildColor = game.specifics['wild_color'] if 'wild_color' in game.specifics else None
 
 		# Check if the CPU has a valid move
 		valid_moves = []

@@ -8,6 +8,8 @@ export interface OhnoCard extends GameCard {
 export interface OhnoGame extends Game {
     current_card?: OhnoCard;
     reverse?: boolean;
+    wild?: boolean;
+    wild_color?: 'Red' | 'Yellow' | 'Green' | 'Blue' | null;
 };
 
 export interface OhnoPlayer extends GamePlayer {
