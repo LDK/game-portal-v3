@@ -9,6 +9,7 @@ import { Users, Monitor } from "feather-icons-react";
 import axios from "axios";
 import LogBox from "../components/LogBox";
 import CurrentCard from "../components/CurrentCard";
+import { CardHand, PlayingCard, OhnoFace } from "../../../components/cards";
 
 interface GameViewProps {
     gameId: string;
@@ -67,7 +68,6 @@ const PlayersList = ({ players, game, csrfToken, dataCallback }: { players: Ohno
                     formData,
                     { headers: { 'Content-Type': 'multipart/form-data', 'X-CSRFToken': csrfToken } }
                   ).then(response => {
-                    console.log('CPU player added:', response.data);
                     if (response.data) {
                       dataCallback(response.data as GameLog[]);
                     }
@@ -93,7 +93,6 @@ const WildModal = ({ player, hand, csrfToken, opened }: { player: OhnoPlayer; ha
   };
 
   const handlePickColor = (color: string) => {
-    console.log('Picked color:', color);
     // Implement color pick logic here, e.g., send to server
     axios.post(`wild/`, {
       player_id: player.id,
@@ -103,8 +102,7 @@ const WildModal = ({ player, hand, csrfToken, opened }: { player: OhnoPlayer; ha
         'X-CSRFToken': csrfToken, // Add CSRF token if needed
       },
     })
-    .then((result) => {
-      console.log('Color picked successfully:', result.data);
+    .then((/*result*/) => {
       // Close modal or update state as needed
     })
     .catch((error) => {
@@ -155,10 +153,39 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   const [players, setPlayers] = useState<OhnoPlayer[]>([]);
   const [userPlayerId, setUserPlayerId] = useState<string | undefined>('');
   const [game, setGame] = useState<OhnoGame | null>(null);
+  const [activeHandIndex, setActiveHandIndex] = useState<number>(-1);
   // const [turnOrder, setTurnOrder] = useState<number>(1);
 
   // User's cards
   const [hand, setHand] = useState<string[]>([]);
+
+  const playableCards = useMemo<string[]>(() => {
+    if (!game || !hand) return [];
+    // Logic to determine playable cards based on game.current_card
+
+      console.log('game current card', game.current_card);
+
+      let playable = hand.filter(cardId => {
+      const cardFace = cardId[1];
+      const cardColor = cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild';
+      const currentFace = game.current_card ? game.current_card[1] : null;
+      const currentColor = game.current_card ? (game.current_card.startsWith('r') ? 'Red' : game.current_card.startsWith('b') ? 'Blue' : game.current_card.startsWith('g') ? 'Green' : game.current_card.startsWith('y') ? 'Yellow' : 'Wild') : null;
+
+      if (game.wild_color) {
+        return cardColor === game.wild_color || cardId === 'w';
+      }
+
+      if (!game.current_card) return false;
+
+      return cardColor === currentColor || cardFace === currentFace || cardId === 'w';
+    });
+
+    if (!playable.length) {
+      playable = hand.filter(cardId => cardId === 'wd');
+    }
+
+    return playable;
+  }, [game, hand]);
 
   const userPlayer = useMemo(() => {
     return players.find(p => p.id === userPlayerId);
@@ -190,6 +217,29 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     });
   };
 
+  const handlePlayCard = (cardId: string) => {
+    console.log('Playing card:', cardId);
+    axios.post(`play/`, {
+      card_id: cardId,
+    }, {
+      headers: {
+        'X-CSRFToken': csrfToken,
+      },
+    })
+    .then((result) => {
+      console.log('Card played successfully:', result.data);
+      if (result.data.game) {
+        setGame(result.data.game as OhnoGame);
+      }
+      if (result.data.log) {
+        setLog(result.data.log as GameLog[]);
+      }
+    })
+    .catch((error) => {
+      console.error("There was an error playing the card!", error);
+    });
+  };
+
   useEffect(() => {
     const fetchGameData = async () => {
       // Placeholder for fetching game data logic
@@ -206,7 +256,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
 
           // Only update log if there's new data
           if ((data_latest_ts && latest_log_ts && data_latest_ts > latest_log_ts) || !latest_log_ts) {
-            console.log('Updating game log with new data:', data_latest_ts, latest_log_ts, log);
             setLog(game_log as GameLog[]);
           }
         } else {
@@ -231,8 +280,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     // return () => clearInterval(interval);
   }, [gameId, log]);
 
-  console.log('wild color:', game?.wild_color);
-
   return (
     <Fragment>
       {userPlayer && <WildModal player={userPlayer} hand={hand} csrfToken={csrfToken} opened={game?.wild} />}
@@ -247,7 +294,32 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
                 <PlayersList {...{ players, game, csrfToken, dataCallback: setLog }} />
               )}
               {(game && game.started_at) && (
-                <CurrentCard game={game} wildColor={game?.wild_color} />
+                <>
+                  <CurrentCard game={game} wildColor={game?.wild_color} />
+
+                  <Box pos="relative" w="100%" className="my-4">
+                    <div className="absolute z-1 w-full">
+                      <CardHand fan={false}>
+                        {hand.sort((a,b) => {
+                          return ((playableCards.includes(a) ? 1 : 0) - (playableCards.includes(b) ? 1 : 0)); 
+                        }).map((cardId, index) => (
+                          <PlayingCard onClick={() => handlePlayCard(cardId)} disabled={!playableCards.includes(cardId)} key={index} clickable={true} activeHandIndex={activeHandIndex} setActiveHandIndex={setActiveHandIndex} handIndex={index}>
+                            <OhnoFace face={cardId[1]} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
+                          </PlayingCard>
+                        ))}
+                      </CardHand>
+                    </div>
+                    <div className="absolute z-2 w-full pointer-events-none">
+                      <CardHand fan={false}>
+                        {hand.map((cardId, index) => (
+                          <PlayingCard key={index} clickable={false} ghost={true} handIndex={index} activeHandIndex={activeHandIndex}>
+                            <OhnoFace face={cardId[1]} ghost={true} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
+                          </PlayingCard>
+                        ))}
+                      </CardHand>
+                    </div>
+                  </Box>
+                </>
               )}
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }} className="text-center mb-4">

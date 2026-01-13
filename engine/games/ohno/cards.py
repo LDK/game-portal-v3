@@ -32,14 +32,14 @@ def faceValues() -> dict:
     '5': 5, '6': 6, '7': 7, '8': 8, '9': 9
   }
 
-def getCardCode(card) -> str:
+def getCardCode(card: dict) -> str:
   # Get group code using groupNames
   group = [key for key, value in groupNames().items() if value == card['group']][0]
 
   if card['face'] == 'Wild':
     return 'w'
   elif card['face'] == 'Draw Four':
-    return 'wd4'
+    return 'wd'
   else:
     # Get face code using faceNames
     face = [key for key, value in faceNames().items() if value == card['face']][0]
@@ -54,7 +54,7 @@ def cardInfo(code:str) -> dict:
     group = code[0]
     face = code[1] if len(code) > 1 else code[1:]
 
-    if (code == 'wd4'):
+    if (code == 'wd'):
       face = 'd4'
     elif (code == 'w'):
       face = 'w'
@@ -93,7 +93,7 @@ def init_deck() -> List[str]:
         deck.append(f'{color}d')
     for i in range(4):
         deck.append('w')
-        deck.append('wd4')
+        deck.append('wd')
     return deck
 
 # Return a new deck, shuffled.
@@ -113,7 +113,7 @@ def turnover_card(game:Game) -> Tuple[List[str], List[str], str]:
 
     # A game cannot start with a wild draw four
     while valid_card == False:
-      if card != 'wd4':
+      if card != 'wd':
         # Rigging for a second...
         card = 'w'
         discard_pile = [card]

@@ -1,16 +1,16 @@
 from rest_framework import serializers
-from engine.models.user import UserProfile
-from engine.models.game import Game, GameLog, Title, GamePlayer
+from engine.models.game import Game, GameLog
 
 class GameSerializer(serializers.ModelSerializer):
 	title = serializers.CharField(source='title.slug', read_only=True)
 	starter = serializers.CharField(source='starter.display_name', read_only=True)
 	players = serializers.SerializerMethodField()
+	current_card = serializers.CharField(source='specifics.current_card', read_only=True)
 
 	class Meta:
 		model = Game
 		depth = 1
-		fields = ['id', 'title', 'starter', 'created_at', 'updated_at', 'started_at', 'cancelled_at', 'ended_at', 'settings', 'round', 'reverse_order', 'turn_order', 'max_players', 'invite_only', 'password', 'players']
+		fields = ['id', 'title', 'current_card', 'starter', 'created_at', 'updated_at', 'started_at', 'cancelled_at', 'ended_at', 'settings', 'round', 'reverse_order', 'turn_order', 'max_players', 'invite_only', 'password', 'players']
 		read_only_fields = ['id', 'created_at', 'updated_at']
 	
 	def get_players(self, obj):

@@ -21,6 +21,7 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
   }, [log]);
 
   const LogEntry = ({ entry }: { entry: GameLog }) => {
+    console.log('Log entry:', entry);
     let entryText = <>{entry.player}: {entry.action}</>;
     const nameText = <span className={`font-bold${entry.cpu_name ? ' cpu-name' : ''}`}>{entry.player || entry.cpu_name}</span>;
     const entryTs =  new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -47,10 +48,8 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
       cardName = <Text component="span" c={textColor} className="font-bold bg-black">{entry.specifics.card.name}</Text>;
     }
 
-    console.log(textColor, entry.specifics);
-
     switch (entry.action) {
-      case 'draw':
+      case 'pass':
         entryText = <Text>{nameText} drew a card.</Text>;
         break;
       case 'draw-two':
@@ -111,7 +110,6 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
     const message = input.value.trim();
     if (message) {
       // Send chat message to server (placeholder logic)
-      console.log('Sending chat message:', message);
       input.value = '';
 
 			const formData = new FormData();

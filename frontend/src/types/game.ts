@@ -46,7 +46,6 @@ export interface Game {
     turn_order: number;
     started?: boolean;
     starter: string;
-    current_card?: GameCard;
     user_player_id?: string;
 };
 

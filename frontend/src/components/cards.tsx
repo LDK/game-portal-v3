@@ -1,13 +1,19 @@
 import { Box, Card, Title, List } from "@mantine/core";
 import React from "react";
 import NoiseField from "./NoiseField";
+import { ArrowUp } from "feather-icons-react";
 
 function distributeValues(n:number, x:number) {
   const step = (2 * n) / (x - 1); // distance between values
   return Array.from({ length: x }, (_, i) => -n + i * step);
 }
 
-export const CardHand = ({ fan = false, children }: { fan?: boolean, children: React.ReactNode }) => {
+export interface CardHandProps {
+  fan?: boolean;
+  children: React.ReactNode;
+  }
+
+export const CardHand = ({ fan = false, children }: CardHandProps) => {
   const cardCount = React.Children.count(children);
   let returnNode: React.ReactNode = children;
 
@@ -43,8 +49,8 @@ export const CardHand = ({ fan = false, children }: { fan?: boolean, children: R
 
     returnNode = React.Children.toArray(children).map((child, i) => {
         return (
-          <Box className="top-0" 
-            pos="absolute" style={{ left: `calc(50% + ${xLocs[i]}px)`, zIndex: i }}>
+          <Box id={`card-${i}`} className="top-0" p={0} m={0} key={i}
+            pos="absolute" style={{ left: `calc(26% + ${xLocs[i]}px)`, zIndex: i }}>
             {child}
           </Box>
         );
@@ -73,12 +79,12 @@ export const CardHand = ({ fan = false, children }: { fan?: boolean, children: R
 interface OhnoFaceProps {
   face: string;
   color?: 'Red' | 'Yellow' | 'Green' | 'Blue' | 'Wild';
+  ghost?: boolean;
 };
 
-export function OhnoFace({ face = 'w', color = 'Wild' }: OhnoFaceProps) {
-
+export function OhnoFace({ face = 'w', color = 'Wild', ghost = false }: OhnoFaceProps) {
   let titleText = '';
-  let colorClass = 'border-black'
+  let colorStyle = 'border-black'
 
   switch (face) {
     case 's':
@@ -103,44 +109,50 @@ export function OhnoFace({ face = 'w', color = 'Wild' }: OhnoFaceProps) {
 
   switch (color) {
     case 'Red':
-      colorClass = 'border-red-500';
+      colorStyle = 'var(--color-red-500)';
       break;
     case 'Yellow':
-      colorClass = 'border-yellow-500';
+      colorStyle = 'var(--color-yellow-500)';
       break;
     case 'Green':
-      colorClass = 'border-green-500';
+      colorStyle = 'var(--color-green-500)';
       break;
     case 'Blue':
-      colorClass = 'border-cyan-500';
+      colorStyle = 'var(--color-cyan-500)';
       break;
     default:
-      colorClass = 'border-black';
+      colorStyle = 'var(--color-black)';
       break;
   }
 
   const cornerText = face.toUpperCase();
 
   return (
-    <Card bg="transparent" className={`w-full h-full border-16 ${colorClass} rounded-lg shadow-lg transform transition-transform duration-500`}
-      style={{ transformStyle: 'preserve-3d' }}
+    <Card p={16} className={`w-full relative h-full ${colorStyle} rounded-lg shadow-lg transform transition-transform duration-500`}
+      style={{ background: colorStyle, transformStyle: 'preserve-3d' }}
     >
-      <div className="absolute top-2 left-2 backface-hidden flex flex-col items-center justify-center">
-        <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
-      </div>
-      <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center">
-        <Title component="h1" fz="h1" fw={700} ff="Raleway" order={3} className="text-4xl text-sky-600">{titleText}</Title>
-      </div>
-      <div className="absolute bottom-2 right-2 backface-hidden flex flex-col items-center justify-center">
-        <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
-      </div>
-      <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center"
-        style={{ transform: 'rotateY(180deg)' }}
-      >
-        <Title order={2} className="text-4xl text-red-500">A</Title>
-        <Title order={3} className="text-2xl text-red-500">♥</Title>
-      </div>
-    </Card>    
+      {ghost &&
+        <ArrowUp color="white" height={12} style={{ position: 'absolute', top: '0px', left: '0px' }} />
+      }
+
+      <Box bg="white" className="w-full h-full relative">
+        <div className="absolute top-2 left-2 backface-hidden flex flex-col items-center justify-center">
+          <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
+        </div>
+        <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center">
+          <Title component="h1" fz="h1" fw={700} ff="Raleway" order={3} className="text-4xl text-sky-600">{titleText}</Title>
+        </div>
+        <div className="absolute bottom-2 right-2 backface-hidden flex flex-col items-center justify-center">
+          <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
+        </div>
+        <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center"
+          style={{ transform: 'rotateY(180deg)' }}
+        >
+          <Title order={2} className="text-4xl text-red-500">A</Title>
+          <Title order={3} className="text-2xl text-red-500">♥</Title>
+        </div>
+      </Box>
+    </Card>
   );
 };
 
@@ -197,40 +209,60 @@ export function BattleFace() {
   );
 };
 
-export function PlayingCard({ inHand, children, clickable = true }: { inHand?: boolean, children?: React.ReactNode, clickable?: boolean }) {
-  const hoverClass = !clickable ? 
-    `cursor-default` :
-    `
-      cursor-pointer hover:translate-y-[-2px] active:translate-y-[-1px]
-      hover:shadow-[0_6px_4px_2px_rgba(2,2,2,0.15),0_0_5px_4px_rgba(200,200,200,0.1)]
-      hover:brightness-110 hover:contrast-130
-      active:shadow-[0_7px_4px_1px_rgba(2,2,2,0.15),0_0_3px_2px_rgba(200,200,200,0.075)]
-      transition-all duration-150
-    `;
+export interface PlayingCardProps {
+  children?: React.ReactNode;
+  clickable?: boolean;
+  setActiveHandIndex?: (index: number) => void;
+  activeHandIndex?: number;
+  handIndex?: number;
+  ghost?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+}
 
-	const card = (<Box mx={4} p={0}
+export function PlayingCard({ children, ghost = false, clickable = true, handIndex = -1, activeHandIndex = -1, setActiveHandIndex = () => {}, disabled = false, onClick = () => {}}: PlayingCardProps) {
+  const hoverClass = !clickable ? 
+    `cursor-default` : 
+      (disabled ? 'cursor-disabled' : 
+      `
+        cursor-pointer hover:translate-y-[-2px] active:translate-y-[-1px]
+        hover:shadow-[0_6px_4px_2px_rgba(2,2,2,0.15),0_0_5px_4px_rgba(200,200,200,0.1)]
+        hover:brightness-110 hover:contrast-130
+        active:shadow-[0_7px_4px_1px_rgba(2,2,2,0.15),0_0_3px_2px_rgba(200,200,200,0.075)]
+      `
+  );
+
+  const ghostClass = !ghost ? '' : 
+    (activeHandIndex === handIndex ?
+      `
+        opacity-95 scale-105 pointer-events-none
+        top-[-4px]
+        z-100
+      ` :
+      `
+        opacity-0 scale-100 pointer-events-none
+      `
+    );
+
+  const hideClass = (!ghost && activeHandIndex !== -1 && activeHandIndex === handIndex) ? 'opacity-0' : '';
+
+  const disabledClass = !disabled ? '' : 'contrast-[0.5]'
+
+	const card = (<Box mx={4} p={0} onMouseEnter={() => { if (!disabled) { setActiveHandIndex(handIndex) } }} onMouseLeave={() => { if (!disabled) { setActiveHandIndex(-1); } }} onClick={onClick}
     style={{ width: '142px', height: '200px', perspective: '1000px', transformStyle: 'preserve-3d'  }}
     className={`
         relative border-1 border-white inline-block rounded-lg bg-white
         select-none
+        ${hideClass}
+        ${ghostClass}
         ${hoverClass}
+        ${disabledClass}
         shadow-[0_8px_6px_3px_rgba(2,2,2,0.15)]
         bg-no-repeat bg-center bg-cover
     `}
     >
-        {children}
+      {children}
     </Box>);
-
-	if (inHand) {
-		return (
-			<Box className="relative group" p={0} m={0}>
-				<Box p={0} m={0} className="ghost-card opacity-0 z-0 group-hover:opacity-100 group-hover:z-40 absolute top-0 left-0 w-full h-full rounded-lg border-1 border-dashed border-gray-400 pointer-events-none bg-red-900">
-					{/* {card} */}
-				</Box>
-				{card}
-			</Box>
-		);
-	}
 
 	return card;
 };

@@ -204,6 +204,93 @@ class WildCard(APIView):
 		advance_until_human_turn(game)
 
 		# Return the updated game state
+		game_serializer = GameSerializer(game)
+		log_serializer = GameLogSerializer(
+			GameLog.objects.filter(game=game).order_by("id"),
+			many=True
+		)
+		return Response({"game": game_serializer.data, "log": log_serializer.data}, status=status.HTTP_200_OK)
+
+class PlayCard(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, game_id, *args, **kwargs):
+		# Look up the game
+		try:
+			game = Game.objects.get(id=game_id)
+		except Game.DoesNotExist:
+			return Response(
+				{"error": "Game not found."},
+				status=status.HTTP_404_NOT_FOUND,
+			)
+
+		# Check if it's the requester's turn
+		try:
+			user_profile = UserProfile.objects.get(user=request.user)
+			current_player = game.current_player
+			if current_player.user != user_profile:
+				return Response(
+					{"error": "It's not your turn."},
+					status=status.HTTP_403_FORBIDDEN,
+				)
+		except UserProfile.DoesNotExist:
+			return Response(
+				{"error": "User profile not found."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		# Handle the play card action
+		from engine.games.ohno.logic import game_move
+		card_id = request.data.get('card_id')
+		game = game_move(game, current_player, 'play', card_id)
+
+		# Advance turns until it's a human player's turn
+		advance_until_human_turn(game)
+
+		# Return the updated game state
+		game_serializer = GameSerializer(game)
+		log_serializer = GameLogSerializer(
+			GameLog.objects.filter(game=game).order_by("id"),
+			many=True
+		)
+		return Response({"game": game_serializer.data, "log": log_serializer.data}, status=status.HTTP_200_OK)
+
+class PassTurn(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def post(self, request, game_id, *args, **kwargs):
+		# Look up the game
+		try:
+			game = Game.objects.get(id=game_id)
+		except Game.DoesNotExist:
+			return Response(
+				{"error": "Game not found."},
+				status=status.HTTP_404_NOT_FOUND,
+			)
+
+		# Check if it's the requester's turn
+		try:
+			user_profile = UserProfile.objects.get(user=request.user)
+			current_player = game.current_player
+			if current_player.user != user_profile:
+				return Response(
+					{"error": "It's not your turn."},
+					status=status.HTTP_403_FORBIDDEN,
+				)
+		except UserProfile.DoesNotExist:
+			return Response(
+				{"error": "User profile not found."},
+				status=status.HTTP_400_BAD_REQUEST,
+			)
+
+		# Handle the pass turn action
+		from engine.games.ohno.logic import game_move
+		game = game_move(game, current_player, 'pass', None)
+
+		# Advance turns until it's a human player's turn
+		advance_until_human_turn(game)
+
+		# Return the updated game state
 		serializer = GameSerializer(game)
 		return Response(serializer.data, status=status.HTTP_200_OK)
 

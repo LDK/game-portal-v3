@@ -74,7 +74,7 @@ def player_list(game:Game, user:(UserProfile | None)) -> List[dict]:
 				}
 				
 				if player.specifics is not None and user is not None and user == player.user:
-						cards = player.specifics['cards'] if 'cards' in player.specifics else {}
+						cards = player.specifics['cards'] if 'cards' in player.specifics else []
 						playerOut['cards'] = cards
 				elif player.specifics is not None:
 						playerOut['card_count'] = len(player.specifics['cards']) if 'cards' in player.specifics else 0
@@ -259,11 +259,14 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 		card_info = cardInfo(card)
 		top_card_info = cardInfo(top_card)
 
+		print("Playing card:", card_info)
+		print("Top card:", top_card_info)
+
 		if card_info['group'] != top_card_info['group'] and card_info['face'] != top_card_info['face'] and card_info['group'] != 'Wild' and not (card_info['group'] == game.specifics['wild_color']):
 			return game
 
 		game.specifics['discard_pile'].append(card)
-		game.specifics['current'] = card
+		game.specifics['current_card'] = card
 
 		player.hand.remove(card)
 
@@ -332,15 +335,15 @@ def game_move(game:Game, player:GamePlayer, action:str, card:str, color:(str | N
 		print("Color:", color)
 
 		if action == 'pass':
-				GameLog.objects.create(game=game, player=player, action='pass')
+				# GameLog.objects.create(game=game, player=player, action='pass')
 				return pass_turn(game, player)
 
 		elif action == 'play':
 				if (card is None):
 					return game
 				
-				GameLog.objects.create(game=game, player=player, action='play', specifics={'card': card})
-				game = play_card(game, player, getCardCode(card))
+				GameLog.objects.create(game=game, player=player, action='play', specifics={'card': cardInfo(card)})
+				return play_card(game, player, card)
 
 		elif action == 'color':
 				print("Turn order going into color change:", game.turn_order)
@@ -368,9 +371,9 @@ def cpu_turn(game:Game) -> Game:
 		print("CPU turn", player.name, game.id)
 
 		# Get the top card from the discard pile
-		discardPile = game.specifics['discard_pile']
-		top_card = discardPile[-1]
+		top_card = game.specifics['current_card'] if 'current_card' in game.specifics else None
 
+		# If a color has been set via a wild card, get it
 		wildColor = game.specifics['wild_color'] if 'wild_color' in game.specifics else None
 
 		# Check if the CPU has a valid move
@@ -450,7 +453,6 @@ def cpu_turn(game:Game) -> Game:
 						return game_move(game, player, 'color', None, color=new_color)
 
 			# Pass the turn if no valid moves are available
-			GameLog.objects.create(game=game, player=player, action='pass', specifics={'card': cInfo})
 			game = pass_turn(game, player)
 
 		return game
