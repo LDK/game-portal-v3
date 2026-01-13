@@ -163,8 +163,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     if (!game || !hand) return [];
     // Logic to determine playable cards based on game.current_card
 
-      console.log('game current card', game.current_card);
-
       let playable = hand.filter(cardId => {
       const cardFace = cardId[1];
       const cardColor = cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild';
@@ -204,7 +202,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
       },
     })
     .then((result) => {
-      console.log('Game started:', result.data);
       if (result.data.game) {
         setGame(result.data.game as OhnoGame);
       }
@@ -218,7 +215,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   };
 
   const handlePlayCard = (cardId: string) => {
-    console.log('Playing card:', cardId);
     axios.post(`play/`, {
       card_id: cardId,
     }, {
@@ -227,7 +223,6 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
       },
     })
     .then((result) => {
-      console.log('Card played successfully:', result.data);
       if (result.data.game) {
         setGame(result.data.game as OhnoGame);
       }

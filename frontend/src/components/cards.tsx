@@ -236,6 +236,7 @@ export function PlayingCard({ children, ghost = false, clickable = true, handInd
     (activeHandIndex === handIndex ?
       `
         opacity-95 scale-105 pointer-events-none
+        brightness-110 contrast-130
         top-[-4px]
         z-100
       ` :

@@ -11,7 +11,7 @@ const CurrentCard = ({ game, wildColor }:{ game:OhnoGame; wildColor?: 'Red' | 'Y
 
     let color:OhnoGroup = wildColor || 'Wild';
 
-    if (!color) {
+    if (!color || color === 'Wild') {
         switch (group) {
             case 'r':
                 color = 'Red';
@@ -32,6 +32,8 @@ const CurrentCard = ({ game, wildColor }:{ game:OhnoGame; wildColor?: 'Red' | 'Y
     }
 
     if (!color) return <></>;
+
+    console.log('color', color, cardId, face, group, wildColor);
 
     return (
         <>

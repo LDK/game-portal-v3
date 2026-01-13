@@ -81,8 +81,6 @@ const resolver: CSSVariablesResolver = (theme) => ({
   dark: {},
 });
 
-console.log('Rendering App');
-
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <MantineProvider theme={theme} defaultColorScheme="light" cssVariablesResolver={resolver} withCssVariables>

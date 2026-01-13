@@ -22,20 +22,17 @@ const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
 
   useEffect(() => {
     const fetchUserGames = async () => {
-      console.log('fetching user games');
       if (userProfile) {
-        console.log('loading true');
         setLoading(true);
         try {
           const response = await fetch(`games/me/${gameListLimit}/`);
           const data = await response.json();
-          console.log('fetched user games', data);
+
           setUserGames(data.games);
           setMoreGamesCount(data.count - gameListLimit);
         } catch (error) {
           console.error("Error fetching user games:", error);
         } finally {
-          console.log('loading false');
           setLoading(false);
         }
       }

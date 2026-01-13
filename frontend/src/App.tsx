@@ -31,8 +31,6 @@ function App() {
   const gameId = rootElement.getAttribute("data-game-id") || undefined;
   const section = rootElement.getAttribute("data-section") || undefined;
 
-  console.log('Rendering app');
-
   const userProfile = useUserProfile();
 
   switch (page) {

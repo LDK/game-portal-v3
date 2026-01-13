@@ -70,7 +70,6 @@ const SettingsPage = ({ csrfToken }: SettingsPageProps) => {
           return;
         }
         if (result.event === "success") {
-          console.log("Upload successful:", result.info);
           setImageUrl(result.info.secure_url);
           // optionally send it to your backend
           fetch("/api/upload-profile-image/", {

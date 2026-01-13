@@ -19,7 +19,6 @@ const GamePage = ({ title, gameId, section, csrfToken, userProfile }: GamePagePr
   const [, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('userProfile', userProfile);
     if (userProfile) {
       setLoading(false);
 
