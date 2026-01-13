@@ -9,9 +9,7 @@ from engine.models.game import Game, GameLog, GamePlayer
 from engine.models.user import UserProfile
 
 def deal_cards(deck:List[str], players:List[GamePlayer], resetScore:bool = False, dealer:GamePlayer = None) -> Tuple[List[str], List[GamePlayer]]:
-	print("Dealing cards to players...", players)
 	for player in players:
-			print("Dealing to player:", player)
 			player.score = 0 if resetScore else player.score if player.score else 0  # Reset score if needed
 			player.specifics['cards'] = []
 			for i in range(7):
@@ -84,15 +82,10 @@ def player_list(game:Game, user:(UserProfile | None)) -> List[dict]:
 		return playersOut
 
 def get_game_state(game:Game, user:(UserProfile | None)) -> dict:
-		players = game.players.all().order_by('play_order')
-		print("players", players)
-		print("user", user)
 		playersOut = player_list(game, user)
 
 		gamePlayers = GamePlayer.objects.filter(game=game).all().order_by('play_order')
 		userPlayer = gamePlayers.filter(user=user).first() if user is not None else None
-
-		print("userPlayer", userPlayer)
 
 		turnOrder = game.turn_order
 
@@ -114,8 +107,6 @@ def get_game_state(game:Game, user:(UserProfile | None)) -> dict:
 				'round': game.round,
 				'reverse': game.reverse_order,
 				'user_player_id': userPlayer.id if userPlayer is not None else None,
-				# 'last_move': game.last_move,
-				# 'last_move_ts': game.last_move_ts,
 				'players': playersOut,
 				'game_log': GameLogSerializer(gameLog, many=True).data
 		}
@@ -267,8 +258,11 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 
 		game.specifics['discard_pile'].append(card)
 		game.specifics['current_card'] = card
+		game.specifics['wild_color'] = None  # Reset wild color on normal play
 
 		player.hand.remove(card)
+
+		GameLog.objects.create(game=game, player=player, action='play', specifics={'card': cardInfo(card)})
 
 		# A player has won the round if they have no cards left
 		if player.hand == []:
@@ -342,7 +336,6 @@ def game_move(game:Game, player:GamePlayer, action:str, card:str, color:(str | N
 				if (card is None):
 					return game
 				
-				GameLog.objects.create(game=game, player=player, action='play', specifics={'card': cardInfo(card)})
 				return play_card(game, player, card)
 
 		elif action == 'color':
@@ -390,8 +383,10 @@ def cpu_turn(game:Game) -> Game:
 			print("Held card", heldCard)
 
 			if heldCard['group'] == topCard['group'] or heldCard['face'] == topCard['face'] and heldCard['group'] != 'Wild':
+				print("Valid move through matching group/face:", c)
 				valid_moves.append(c)
 			elif game.specifics['wild'] == True and heldCard['group'] == wildColor:
+				print("Valid move through wild color match:", c)
 				valid_moves.append(c)
 
 		# Add wild cards to the list of valid moves if no other moves are available
@@ -430,14 +425,11 @@ def cpu_turn(game:Game) -> Game:
 					break
 
 		if card is None:
-			print("No valid moves")
 			if game.specifics.get('wild', False) == True:
-				game = game_move(game, player, 'color', None, color=colorRanks[0])
+				return game_move(game, player, 'color', None, color=colorRanks[0])
 			else:
-				game = pass_turn(game, player)
+				return pass_turn(game, player)
 		else:
-			cInfo = cardInfo(card)
-
 			# If the game is awaiting a Wild choice, change the color to the most common color
 			if game.specifics.get('wild', False) == True:
 				for color in colorPoints:
@@ -452,7 +444,8 @@ def cpu_turn(game:Game) -> Game:
 							new_color = color
 						return game_move(game, player, 'color', None, color=new_color)
 
-			# Pass the turn if no valid moves are available
-			game = pass_turn(game, player)
+			else:
+				return game_move(game, player, 'play', card)
 
-		return game
+		# Pass the turn if no valid moves are available
+		return pass_turn(game, player)
