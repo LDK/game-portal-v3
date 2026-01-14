@@ -48,7 +48,7 @@ function App() {
       break;
     default:
       // Render default content or redirect
-      mainContent = <HomePage />;
+      mainContent = <HomePage {...{ userProfile }} />;
       break;
   }
 

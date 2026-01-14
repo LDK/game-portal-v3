@@ -19,8 +19,6 @@ class GameChat(views.APIView):
 
         try:
             profile = UserProfile.objects.get(user=request.user)
-            print("User", request.user)
-            print("profile", profile)
             player = GamePlayer.objects.get(game=game, user=profile)
         except UserProfile.DoesNotExist:
             return Response(
@@ -39,8 +37,6 @@ class GameChat(views.APIView):
                 {"error": "Message cannot be empty."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        print("Message:", message)
 
         # Create the chat message
         GameLog.objects.create(

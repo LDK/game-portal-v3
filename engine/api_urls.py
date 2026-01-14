@@ -1,5 +1,5 @@
 from django.urls import path
-from .api_views import ClearProfileImageView, SaveAccountInfoView, SaveAccountSettingsView, UserProfileListView, UploadProfileImageView, UserProfileDetailView, UserProfileView, MyProfileView
+from .api_views import ClearProfileImageView, SaveAccountInfoView, SaveAccountSettingsView, SystemStatsView, UserProfileListView, UploadProfileImageView, UserProfileDetailView, UserProfileView, MyProfileView
 
 urlpatterns = [
     path("userprofiles/", UserProfileListView.as_view(), name="userprofile-list"),
@@ -9,4 +9,5 @@ urlpatterns = [
     path("userprofiles/<str:user__username>/", UserProfileDetailView.as_view(), name="userprofile-detail"),
     path("account/settings/", SaveAccountSettingsView.as_view(), name="userprofile-settings"),
     path("account/info/", SaveAccountInfoView.as_view(), name="userprofile-info"),
+    path("stats/", SystemStatsView.as_view(), name="system-stats"),
 ]

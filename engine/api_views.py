@@ -1,4 +1,7 @@
 from rest_framework import generics
+
+from engine.models.game import Title
+from engine.models.user import UserProfile
 from .models.user import UserProfile
 from .serializers import UserProfileSerializer, UserProfileSerializerFull
 from rest_framework import status, permissions
@@ -112,4 +115,23 @@ class SaveAccountInfoView(APIView):
             "first_name": user.first_name,
             "last_name": user.last_name,
             "display_name": profile.display_name if profile else None
+        }, status=status.HTTP_200_OK)
+
+class SystemStatsView(APIView):
+    permission_classes = [permissions.AllowAny]
+    def get(self, request, *args, **kwargs):
+        from .serializers import TitleSerializer
+
+        system_stats = {}
+        system_stats['total_users'] = UserProfile.objects.count()
+        system_stats['most_played_titles'] = Title.objects.order_by('-games_played')[:5]
+        system_stats['newest_titles'] = Title.objects.order_by('-id')[:5]
+
+        serialized_most_played = TitleSerializer(system_stats['most_played_titles'], many=True).data
+        serialized_newest = TitleSerializer(system_stats['newest_titles'], many=True).data
+
+        return Response({
+            "total_users": system_stats['total_users'],
+            "most_played_titles": serialized_most_played,
+            "newest_titles": serialized_newest
         }, status=status.HTTP_200_OK)

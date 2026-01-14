@@ -8,6 +8,7 @@ class Title(models.Model):
 	developer = models.CharField(max_length=200, blank=True, null=True)
 	cover_image = models.URLField(blank=True, null=True)
 	category = models.CharField(max_length=100, blank=True, null=True)
+	games_played = models.IntegerField(default=0)
 
 	@property
 	def open_games(self):

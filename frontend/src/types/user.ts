@@ -1,3 +1,4 @@
+import type { StatTitle } from "../hooks/useSystemStats";
 import type { Game } from "./game";
 
 export interface User {
@@ -11,4 +12,8 @@ export interface User {
     last_name: string;
     profile_image: string | null;
     games?: Game[];
+    most_played_titles?: {
+        title: StatTitle;
+        count: number;
+    }[];
 };

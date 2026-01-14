@@ -24,7 +24,7 @@ class UserProfileSerializerFull(serializers.ModelSerializer):
     first_name = serializers.CharField(source='user.first_name', read_only=True)
     last_name = serializers.CharField(source='user.last_name', read_only=True)
     games = GameSerializer(many=True, read_only=True, source='ongoing_games')
-    most_played_titles = serializers.DictField(read_only=True)
+    most_played_titles = serializers.ListField(read_only=True)
 
     class Meta:
         from .models.user import UserProfile

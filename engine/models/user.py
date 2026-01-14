@@ -19,20 +19,21 @@ class UserProfile(models.Model):
         return games
 
     @property
-    def most_played_titles(self) -> dict:
-        gps = GamePlayer.objects.filter(user=self)
-        title_count = {}
+    def most_played_titles(self) -> list:
         from engine.serializers import TitleSerializer
 
+        gps = GamePlayer.objects.filter(user=self)
+        title_count = {}
+
         for gp in gps:
-            title = TitleSerializer(gp.game.title).data
             title_id = gp.game.title.id
             if title_id in title_count:
                 title_count[title_id] += 1
             else:
                 title_count[title_id] = 1
         sorted_titles = sorted(title_count.items(), key=lambda x: x[1], reverse=True)
-        return {str(title_id): { 'count': count, 'title': TitleSerializer(Title.objects.get(id=title_id)).data } for title_id, count in sorted_titles}
+        # return {str(title_id): { 'count': count, 'title': TitleSerializer(Title.objects.get(id=title_id)).data } for title_id, count in sorted_titles}
+        return [{ 'count': count, 'title': TitleSerializer(Title.objects.get(id=title_id)).data } for title_id, count in sorted_titles]
 
     def __str__(self):
         return self.display_name or self.user.username
