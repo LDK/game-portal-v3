@@ -4,7 +4,7 @@ from typing import List, Tuple
 
 from engine.games.ohno.cards import cardInfo, getCardCode
 from engine.games.ohno.serializers import GameLogSerializer
-from engine.games.util import get_next_turn_order, without_keys
+from engine.games.util import without_keys
 from engine.models.game import Game, GameLog, GamePlayer
 from engine.models.user import UserProfile
 
@@ -125,10 +125,13 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 		face = card[1:] if len(card) > 1 else card
 
 		game.specifics['wild'] = False  # Reset wild status
-		game.specifics['d4'] = False # Reset draw four status
 		target_player = game.next_player
 
 		action = face
+
+		if face == 'x':
+			action = 'd4'
+
 		log_action = None
 
 		if len(players) == 2:
@@ -137,11 +140,11 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 						action = 's'
 
 		if action not in ['w', 'r', 'd4']:
-				game.turn_order = get_next_turn_order(game) # Move to the next player by default
+				game.turn_order = game.next_slot # Move to the next player by default
 
 		if action == 's':  # Skip
 				log_action = 'skip'
-				game.turn_order = get_next_turn_order(game) # Skip the next player's turn
+				game.turn_order = game.next_slot # Skip the next player's turn
 
 		elif action == 'r':  # Reverse
 				log_action = 'reverse'
@@ -150,8 +153,8 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 
 		elif action == 'd':  # Draw Two
 				log_action = 'draw-two'
-				# game.turn_order = get_next_turn_order(game) # Move to the next player by default
-				next_index = get_next_turn_order(game) # Skip the next player's turn
+				# game.turn_order = game.next_slot # Move to the next player by default
+				next_index = game.next_slot # Skip the next player's turn
 				for _ in range(2):
 					game = draw_card(game, target_player)
 				game.turn_order = next_index
@@ -178,15 +181,17 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 		elif action == 'd4':  # Wild Draw Four
 				log_action = 'draw-four'
 				game.specifics['wild'] = True
-				game.specifics['d4'] = True
+				game.specifics['skip_next'] = True
+				print("Setting skip_next for Wild Draw Four effect")
+				game.save()
 				for _ in range(4):
 						game = draw_card(game, target_player)
-				game.turn_order = get_next_turn_order(game) # Skip the next player's turn
+				# game.turn_order = game.next_slot # Skip the next player's turn
 		else:
 				# Just a number card, no further action needed
 				pass
 
-		print("Game turn order:", game.turn_order)
+		# print("Game turn order:", game.turn_order)
 		game.save()
 
 		if log_action:
@@ -209,17 +214,18 @@ def color_info(player:GamePlayer) -> Tuple[dict, list]:
 		for card in player.hand:
 			card_info = cardInfo(card)
 			color = card_info['group']
+
 			value = card_info['value']
-			print("Card color:", color, "value:", value)
+			# print("Card color:", color, "value:", value)
 			colorPoints[color] = colorPoints.get(color, 0) + value
 			colorCounts[color] = colorCounts.get(color, 0) + 1
 
 		for color in sorted(colorPoints, key=colorPoints.get, reverse=True):
 			colorRanks.append(color)
 
-		print("Color points:", colorPoints)
-		print("Color counts:", colorCounts)
-		print("Color ranks:", colorRanks)
+		# print("Color points:", colorPoints)
+		# print("Color counts:", colorCounts)
+		# print("Color ranks:", colorRanks)
 
 		return colorPoints, colorRanks, colorCounts
 
@@ -250,8 +256,8 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 		card_info = cardInfo(card)
 		top_card_info = cardInfo(top_card)
 
-		print("Playing card:", card_info)
-		print("Top card:", top_card_info)
+		# print("Playing card:", card_info)
+		# print("Top card:", top_card_info)
 
 		if card_info['group'] != top_card_info['group'] and card_info['face'] != top_card_info['face'] and card_info['group'] != 'Wild' and not (card_info['group'] == game.specifics['wild_color']):
 			return game
@@ -267,7 +273,7 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 		# A player has won the round if they have no cards left
 		if player.hand == []:
 			players = game.players.all()
-			game.specifics['roundWinner'] = { "user_id": player.user.id if player.user is not None else None, "name": player.cpu_name if player.cpu_name is not None else player.user.get_username() }
+			game.specifics['roundWinner'] = { "user_id": player.user.id if player.user is not None else None, "name": player.cpu_name if player.cpu_name is not None else player.user.display_name }
 			GameLog.objects.create(game=game, player=player, action='round-winner')
 
 			game.turn = None
@@ -284,7 +290,7 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 				for card in pl.hand:
 					cInfo = cardInfo(card)
 					plPoints += cInfo['value']
-					print((pl.user.get_username() if pl.user is not None else pl.cpu_name) + " has cards: ")
+					print((pl.user.display_name if pl.user is not None else pl.cpu_name) + " has cards: ")
 					print(pl.hand)
 					print("For a total of " + str(plPoints) + " points")
 					# pl.specifics['cards'] = []
@@ -294,7 +300,7 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 			print("Previous points: " + str(points))
 			print("Points from this round: " + str(roundPoints))
 			print("Total points for" + (
-        player.user.get_username() if player.user is not None else player.cpu_name
+        player.user.display_name if player.user is not None else player.cpu_name
 			) + ": " + str(points + roundPoints))
 
 			points += roundPoints
@@ -324,10 +330,6 @@ def game_move(game:Game, player:GamePlayer, action:str, card:str, color:(str | N
 		"""
 		Make a move in the game.
 		"""
-
-		print("Game move card:", card)
-		print("Color:", color)
-
 		if action == 'pass':
 				# GameLog.objects.create(game=game, player=player, action='pass')
 				return pass_turn(game, player)
@@ -345,6 +347,14 @@ def game_move(game:Game, player:GamePlayer, action:str, card:str, color:(str | N
 				game.specifics['wild'] = False # Reset wild status after color is chosen
 				game.turn_order = game.next_slot
 				game.save()
+
+				if game.specifics.get('skip_next'):
+					print("Skipping next player's turn as per Wild Draw Four effect")
+					# Advance turn order again to skip the next player
+					game.turn_order = game.next_slot
+					del game.specifics['skip_next']
+					game.save()
+
 				print("Card group for color change:", color)
 				print("New turn order after color change:", game.turn_order)
 				GameLog.objects.create(game=game, player=player, action='color', specifics={'color': color})
@@ -397,6 +407,7 @@ def cpu_turn(game:Game) -> Game:
 					valid_moves.append(c)
 
 		colorPoints, colorRanks, colorCounts = color_info(player)
+		print(colorPoints, colorRanks, colorCounts)
 		# Build a list of moves that would change the color
 		colorChangeMoves = []
 
@@ -440,6 +451,9 @@ def cpu_turn(game:Game) -> Game:
 							# fewest cards in hand, to clear a path to using the Wild 
 							# cards later.
 							new_color = min(colorCounts, key=colorCounts.get)
+							# New color cannot be 'Wild'
+							new_color = new_color if new_color != 'Wild' else colorRanks[0]
+							new_color = new_color if new_color != 'Wild' else 'Red'  # Fallback to red
 						else:
 							new_color = color
 						return game_move(game, player, 'color', None, color=new_color)

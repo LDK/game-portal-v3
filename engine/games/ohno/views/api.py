@@ -1,6 +1,6 @@
 from engine.games.ohno.cards import init_cards, turnover_card
 from engine.games.ohno.logic import deal_cards, handle_card_effect, cpu_turn
-from engine.games.util import get_cpu_name, get_next_turn_order
+from engine.games.util import get_cpu_name
 from engine.models.game import Game, Title, GamePlayer, GameLog
 from engine.games.ohno.serializers import GameLogSerializer, GameSerializer
 from engine.models.user import UserProfile
@@ -129,9 +129,9 @@ class StartGame(APIView):
 		game.specifics['discard_pile'] = discard_pile
 		game.specifics['current_card'] = current_card
 
-		print("Current card after effect:", game.specifics['current_card'])
-		print("Current player after effect:", game.current_player.name if game.current_player else "None")
-		print("Turn order after effect:", game.turn_order)
+		# print("Current card after effect:", game.specifics['current_card'])
+		# print("Current player after effect:", game.current_player.name if game.current_player else "None")
+		# print("Turn order after effect:", game.turn_order)
 
 		game.last_play = timezone.now()
 		game.started_at = timezone.now()

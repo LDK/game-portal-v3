@@ -179,7 +179,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     });
 
     if (!playable.length) {
-      playable = hand.filter(cardId => cardId === 'wd');
+      playable = hand.filter(cardId => cardId === 'wx');
     }
 
     return playable;
