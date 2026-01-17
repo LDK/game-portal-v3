@@ -9,9 +9,10 @@ interface LogBoxProps {
 		log: GameLog[];
 		csrfToken: string;
 		dataCallback: (data: GameLog[]) => void;
+    userTurn?: boolean;
 }
 
-const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
+const LogBox = ({ gameId, log, csrfToken, dataCallback, userTurn = false }: LogBoxProps) => {
   const gameLogEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -90,6 +91,9 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
       case 'deal_cards':
         entryText = <Text>{nameText} dealt the cards.</Text>;
         break;
+      case 'your-turn':
+        entryText = <Text className="fw-bold">It's your turn!</Text>;
+        break;
       case 'color':
         entryText = <Text>{nameText} changed the color to <Text component="span" c={textColor} className="font-bold bg-black">{entry.specifics?.color}</Text>.</Text>;
         break;
@@ -134,6 +138,11 @@ const LogBox = ({ gameId, log, csrfToken, dataCallback }: LogBoxProps) => {
         {log.map((entry, index) => (
           <LogEntry key={index} entry={entry} />
         ))}
+
+        {userTurn && (
+          <LogEntry entry={{ player: 'You', action: 'your-turn', timestamp: new Date().toISOString(), turnOrder: -1 }} />
+        )}
+
         <div ref={gameLogEndRef} />
       </Box>
 

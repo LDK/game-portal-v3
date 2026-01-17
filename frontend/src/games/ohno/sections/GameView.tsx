@@ -17,6 +17,7 @@ interface GameViewProps {
 };
 
 const PlayersDisplay = ({ players, reverse, turnOrder }: { players: OhnoPlayer[]; reverse: boolean; turnOrder: number }) => {
+  console.log('players', players, 'turnOrder', turnOrder);  
   return (
     <>
       <Title order={3} mb={8} className={`text-black text-left text-yellow-500 ${reverse ? 'bg-red-500' : ''}`}>Players</Title>
@@ -154,13 +155,35 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   const [userPlayerId, setUserPlayerId] = useState<string | undefined>('');
   const [game, setGame] = useState<OhnoGame | null>(null);
   const [activeHandIndex, setActiveHandIndex] = useState<number>(-1);
+  const [lastSeenLog, setLastSeenLog] = useState<number | null>(null);
+
+  const lastLogTs = useMemo<number | null>(() => {
+    if (log.length === 0) return null;
+    return new Date(log[log.length - 1].timestamp).getTime();
+  }, [log]);
+
+  useEffect(() => {
+    if (lastLogTs && (lastSeenLog === null || lastLogTs > lastSeenLog)) {
+      setLastSeenLog(lastLogTs);
+    }
+  }, [lastLogTs, lastSeenLog]);
+
   // const [turnOrder, setTurnOrder] = useState<number>(1);
 
   // User's cards
   const [hand, setHand] = useState<string[]>([]);
 
+  const userPlayer = useMemo(() => {
+    return players.find(p => p.id === userPlayerId);
+  }, [players, userPlayerId]);
+
+  const userTurn = useMemo(() => {
+    if (!userPlayer || !game) return false;
+    return game.turn_order === userPlayer.play_order;
+  }, [userPlayer, game]);
+
   const playableCards = useMemo<string[]>(() => {
-    if (!game || !hand) return [];
+    if (!game || !hand || !userTurn) return [];
     // Logic to determine playable cards based on game.current_card
 
       let playable = hand.filter(cardId => {
@@ -183,11 +206,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     }
 
     return playable;
-  }, [game, hand]);
-
-  const userPlayer = useMemo(() => {
-    return players.find(p => p.id === userPlayerId);
-  }, [players, userPlayerId]);
+  }, [game, hand, userTurn]);
 
   useEffect(() => {
     if (userPlayer && userPlayer.cards) {
@@ -275,6 +294,43 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     // return () => clearInterval(interval);
   }, [gameId, log]);
 
+  // Fetch game data every 2 seconds once the game has started
+  useEffect(() => {
+    if (!game || !game.started_at) return;
+
+    const interval = setInterval(() => {
+      const fetchGameData = async () => {
+        fetch(`info/`).then(response => response.json()).then(data => {
+          const { game_log, players, ...gameData } = data;
+
+          if (gameData.user_player_id) {
+            setUserPlayerId(gameData.user_player_id);
+          }
+
+          if (game_log) {
+            const data_latest_ts = game_log.length > 0 ? game_log[game_log.length - 1].timestamp : null;
+            const latest_log_ts = log.length > 0 ? log[log.length - 1].timestamp : null;
+
+            // Only update log if there's new data
+            if ((data_latest_ts && latest_log_ts && data_latest_ts > latest_log_ts) || !latest_log_ts) {
+              setLog(game_log as GameLog[]);
+            }
+          } else {
+            setLog(game_log as GameLog[]);
+          }
+
+          if (players) {
+            setPlayers(players as OhnoPlayer[]);
+          }
+          setGame(gameData as OhnoGame);
+        });
+      };
+
+      fetchGameData();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [game, log]);
+
   return (
     <Fragment>
       {userPlayer && <WildModal player={userPlayer} hand={hand} csrfToken={csrfToken} opened={game?.wild} />}
@@ -319,7 +375,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
             </Grid.Col>
             <Grid.Col span={{ base: 12, sm: 6 }} className="text-center mb-4">
               <Title order={3} mb={8} className="text-black text-left text-yellow-500">Game Log</Title>
-              <LogBox dataCallback={setLog} {...{ log, gameId, csrfToken }} />
+              <LogBox dataCallback={setLog} {...{ log, gameId, csrfToken, userTurn }} />
               {game?.started_at && (
                 <PlayersDisplay {...{ players, reverse: game.reverse || false, turnOrder: game.turn_order || 1 } } />
               )}

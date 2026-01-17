@@ -18,4 +18,5 @@ export interface OhnoGame extends Game {
 export interface OhnoPlayer extends GamePlayer {
     cards: string[];
     user_profile_id?: number;
+    turn_order?: number;
 }

@@ -9,9 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
 
-def advance_until_human_turn(game):
-	while (game.current_player.is_human == False):
-		game = cpu_turn(game)
+from engine.tasks import advance_until_human_turn
 
 class CreateNewGame(APIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -138,7 +136,7 @@ class StartGame(APIView):
 		game.save()
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn(game)
+		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
 
 		game_serializer = GameSerializer(game)
 		log_serializer = GameLogSerializer(
@@ -184,6 +182,7 @@ class WildCard(APIView):
 		try:
 			user_profile = UserProfile.objects.get(user=request.user)
 			current_player = game.current_player
+
 			if current_player.user != user_profile:
 				return Response(
 					{"error": "It's not your turn."},
@@ -201,7 +200,7 @@ class WildCard(APIView):
 		game = game_move(game, current_player, 'color', 'w', color=color)
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn(game)
+		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
 
 		# Return the updated game state
 		game_serializer = GameSerializer(game)
@@ -245,7 +244,7 @@ class PlayCard(APIView):
 		game = game_move(game, current_player, 'play', card_id)
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn(game)
+		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
 
 		# Return the updated game state
 		game_serializer = GameSerializer(game)
@@ -288,7 +287,7 @@ class PassTurn(APIView):
 		game = game_move(game, current_player, 'pass', None)
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn(game)
+		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
 
 		# Return the updated game state
 		serializer = GameSerializer(game)
