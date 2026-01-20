@@ -17,4 +17,6 @@ urlpatterns = [
     path("game/<str:game_id>/draw/", api_views.PassTurn.as_view(), name="draw_card"),
     path("games/me/", api_views.UserGames.as_view(), name="user_games"),
     path("games/me/<int:limit>/", api_views.UserGames.as_view(), name="user_games"),
+    path("games/open/", api_views.OpenGames.as_view(), name="open_games"),
+    path("games/open/<int:limit>/", api_views.OpenGames.as_view(), name="open_games"),
 ]

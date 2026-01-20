@@ -135,7 +135,8 @@ class StartGame(APIView):
 		game.started_at = timezone.now()
 		game.save()
 
-		broadcast_game_state(game)
+		# Broadcast public state
+		broadcast_game_state(game, None)
 
 		# Advance turns until it's a human player's turn
 		advance_until_human_turn.schedule(args=(game.id, user_gp), delay=2.5)
@@ -245,6 +246,7 @@ class PlayCard(APIView):
 		card_id = request.data.get('card_id')
 		game = game_move(game, current_player, 'play', card_id)
 
+		# Broadcast public state
 		broadcast_game_state(game, None)
 
 		# Advance turns until it's a human player's turn
@@ -290,12 +292,22 @@ class PassTurn(APIView):
 		from engine.games.ohno.logic import game_move
 		game = game_move(game, current_player, 'pass', None)
 
+		# Broadcast public state
+		broadcast_game_state(game, None)
+
+		# Broadcast private state
+		broadcast_game_state(game, current_player)
+
 		# Advance turns until it's a human player's turn
 		advance_until_human_turn.schedule(args=(game.id,current_player), delay=2.5)
 
 		# Return the updated game state
-		serializer = GameSerializer(game)
-		return Response(serializer.data, status=status.HTTP_200_OK)
+		game_state = get_game_state(game, user_profile)
+		log_serializer = GameLogSerializer(
+			GameLog.objects.filter(game=game).order_by("id"),
+			many=True
+		)
+		return Response({"game": game_state, "log": log_serializer.data}, status=status.HTTP_200_OK)
 
 class AddCpuPlayer(APIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -370,6 +382,30 @@ class UserGames(APIView):
 			games = games[:limit]
 
 		serializer = GameSerializer(games, many=True)
+
+		return_value = {
+			'count': game_count,
+			'games': serializer.data
+		}
+		return Response(return_value, status=status.HTTP_200_OK)
+
+class OpenGames(APIView):
+	permission_classes = [permissions.IsAuthenticated]
+
+	def get(self, request, limit=None, *args, **kwargs):
+		# Fetch open games that are not invite-only and not started yet
+		games_query = Game.objects.filter(
+			started_at__isnull=True,
+			invite_only=False,
+			cancelled_at__isnull=True
+		).order_by('-created_at')
+
+		game_count = games_query.count()
+
+		if limit is not None:
+			games_query = games_query[:limit]
+
+		serializer = GameSerializer(games_query, many=True)
 
 		return_value = {
 			'count': game_count,

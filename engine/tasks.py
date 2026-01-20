@@ -1,7 +1,7 @@
 # engine/tasks.py
 from huey.contrib.djhuey import task
 
-from engine.games.ohno.realtime import broadcast_game_state
+from engine.games.ohno.realtime import broadcast_game_player_states
 from engine.models.game import GamePlayer
 
 @task()
@@ -32,7 +32,7 @@ def advance_until_human_turn(game_id: int, player: GamePlayer = None):
     # Re-read in case cpu_turn mutated or saved something else
     game.refresh_from_db()
 
-    broadcast_game_state(game, player)
+    broadcast_game_player_states(game)
 
     # If it's still a CPU player, schedule the *next* CPU move in 2.5 seconds
     if not game.current_player.is_human:

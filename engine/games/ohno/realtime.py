@@ -15,7 +15,6 @@ def broadcast_game_state(game: Game, player: GamePlayer = None):
 
     public_group_name = f"game_{game.id}"
     public_game_state = get_game_state(game, None)
-    print("Public group:", public_group_name)
 
     if player:
         player_game_state = get_game_state(game, player.user if player else None)
@@ -58,4 +57,7 @@ def broadcast_game_state(game: Game, player: GamePlayer = None):
             },
         )
 
-
+def broadcast_game_player_states(game: Game):
+    for player in game.players.all():
+        if player.is_human:
+            broadcast_game_state(game, player)
