@@ -305,7 +305,8 @@ def play_card(game:Game, player:GamePlayer, card:str) -> Game:
 			player.specifics['score'] = points
 			player.save()
 
-			if points >= game.specifics['pointLimit']:
+			if points >= (game.specifics['pointLimit'] if 'pointLimit' in game.specifics else 500):
+				# Game over
 				if player.user is not None:
 					game.winner = player.user
 				else:
