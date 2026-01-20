@@ -80,9 +80,10 @@ interface OhnoFaceProps {
   face: string;
   color?: 'Red' | 'Yellow' | 'Green' | 'Blue' | 'Wild';
   ghost?: boolean;
+  my_turn?: boolean;
 };
 
-export function OhnoFace({ face = 'w', color = 'Wild', ghost = false }: OhnoFaceProps) {
+export function OhnoFace({ face = 'w', color = 'Wild', ghost = false, my_turn = false }: OhnoFaceProps) {
   let titleText = '';
   let colorStyle = 'border-black'
 
@@ -131,7 +132,7 @@ export function OhnoFace({ face = 'w', color = 'Wild', ghost = false }: OhnoFace
     <Card p={16} className={`w-full relative h-full ${colorStyle} rounded-lg shadow-lg transform transition-transform duration-500`}
       style={{ background: colorStyle, transformStyle: 'preserve-3d' }}
     >
-      {ghost &&
+      {(ghost && my_turn) &&
         <ArrowUp color="white" height={12} style={{ position: 'absolute', top: '0px', left: '0px' }} />
       }
 
@@ -218,9 +219,10 @@ export interface PlayingCardProps {
   ghost?: boolean;
   disabled?: boolean;
   onClick?: () => void;
+  my_turn?: boolean;
 }
 
-export function PlayingCard({ children, ghost = false, clickable = true, handIndex = -1, activeHandIndex = -1, setActiveHandIndex = () => {}, disabled = false, onClick = () => {}}: PlayingCardProps) {
+export function PlayingCard({ children, ghost = false, my_turn = false, clickable = true, handIndex = -1, activeHandIndex = -1, setActiveHandIndex = () => {}, disabled = false, onClick = () => {}}: PlayingCardProps) {
   const hoverClass = !clickable ? 
     `cursor-default` : 
       (disabled ? 'cursor-disabled' : 
@@ -233,7 +235,7 @@ export function PlayingCard({ children, ghost = false, clickable = true, handInd
   );
 
   const ghostClass = !ghost ? '' : 
-    (activeHandIndex === handIndex ?
+    ((activeHandIndex === handIndex && my_turn) ?
       `
         opacity-95 scale-105 pointer-events-none
         brightness-110 contrast-130
