@@ -5,7 +5,7 @@ import type { User } from "../../../types/user";
 import { useMemo, useState } from "react";
 import moment from "moment";
 
-const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
+const GameListing = ({ game, user }: { game: Game, user: User }) => {
   const isUserTurn = game.turn_player?.user?.id === user.id;
   const lastPlayTime = (game.round > 0 && game.last_play) ? moment(game.last_play).fromNow() : null;
   const [showPopover, setShowPopover] = useState(false);
@@ -74,4 +74,4 @@ const YourGameListing = ({ game, user }: { game: Game, user: User }) => {
   );
 };
 
-export default YourGameListing;
+export default GameListing;
