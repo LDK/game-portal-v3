@@ -4,6 +4,7 @@ import NewGame from "../components/NewGame";
 import { useEffect, useState } from "react";
 import SolidSection from "../../../components/layout/SolidSection";
 import YourGames from "../components/YourGames";
+import OpenGames from "../components/OpenGames";
 import type { Game } from "../../../types/game";
 import type { User } from "../../../types/user";
 
@@ -15,35 +16,56 @@ interface OhnoHomeProps {
 const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
   const [newGameOpen, setNewGameOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingYour, setLoadingYour] = useState(false);
+  const [loadingOpen, setLoadingOpen] = useState(false);
   const [userGames, setUserGames] = useState<Game[]>([]);
-  const [moreGamesCount, setMoreGamesCount] = useState(0);
+  const [openGames, setOpenGames] = useState<Game[]>([]);
+  const [moreYourGamesCount, setMoreYourGamesCount] = useState(0);
+  const [moreOpenGamesCount, setMoreOpenGamesCount] = useState(0);
 
   const gameListLimit = 5;
 
   useEffect(() => {
     const fetchUserGames = async () => {
       if (userProfile) {
-        setLoading(true);
+        setLoadingYour(true);
         try {
           const response = await fetch(`games/me/${gameListLimit}/`);
           const data = await response.json();
 
           setUserGames(data.games);
-          setMoreGamesCount(data.count - gameListLimit);
+          setMoreYourGamesCount(data.count - gameListLimit);
         } catch (error) {
           console.error("Error fetching user games:", error);
         } finally {
-          setLoading(false);
+          setLoadingYour(false);
         }
       }
     };
 
+    const fetchOpenGames = async () => {
+      setLoadingOpen(true);
+      try {
+        const response = await fetch(`games/open/${gameListLimit}/`);
+        const data = await response.json();
+
+        setOpenGames(data.games);
+        setMoreOpenGamesCount(data.count - gameListLimit);
+      } catch (error) {
+        console.error("Error fetching open games:", error);
+      } finally {
+        setLoadingOpen(false);
+      }
+    }
+
     fetchUserGames();
+    fetchOpenGames();
   }, [userProfile]);
 
   return (
     <SolidSection color="blue" colorLevel={7}>
       <NewGame {...{ newGameOpen, setNewGameOpen, setLoading, csrfToken }} />
+      <LoadingOverlay visible={loading} />
 
       <Box py={12}>
         <Grid align="center" gutter="md">
@@ -76,33 +98,28 @@ const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
         </Card>
       </Box>
       
-      {(loading) && <LoadingOverlay visible={true} />}
-      {!loading && userProfile && (
-        <Box pb={12}>
-          <Grid gutter="md">
-            {userProfile && (
-              <Grid.Col span={{ base: 12, sm: 4 }} className="text-left">
-                <YourGames {...{ games: userGames, userProfile, moreGamesCount }} />
-              </Grid.Col>
-            )}
+      <Box pb={12} pos="relative">
+        <Grid gutter="md">
+          <Grid.Col span={{ base: 12, sm: 4 }} className="text-left relative">
+            {userProfile && (<>
+              <YourGames {...{ games: userGames, userProfile, moreGamesCount: moreYourGamesCount, loading: loadingYour }} />
+            </>)}
+          </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
-              <Card padding="md" shadow="sm">
-                <Title order={3} className="text-green-500">Open Games</Title>
-                <Text mt={8} size="sm">Games that are open for anyone to hop in. Join the fun!</Text>
-                <Text mt={8}>(show up to 5 open games with a link for more if needed)</Text>
-              </Card>
-            </Grid.Col>
+          <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
+            {userProfile && (<>
+              <OpenGames {...{ games: openGames, userProfile, moreGamesCount: moreOpenGamesCount, loading: loadingOpen }} />
+            </>)}
+          </Grid.Col>
 
-            <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
-              <Card padding="md" shadow="sm">
-                <Title order={3} className="text-yellow-500">Easy to Learn</Title>
-                <Text mt={8}>Simple rules make it accessible for everyone.</Text>
-              </Card>
-            </Grid.Col>
-          </Grid>
-        </Box>
-      )}
+          <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
+            <Card padding="md" shadow="sm">
+              <Title order={3} className="text-yellow-500">Easy to Learn</Title>
+              <Text mt={8}>Simple rules make it accessible for everyone.</Text>
+            </Card>
+          </Grid.Col>
+        </Grid>
+      </Box>
     </SolidSection>
   );
 };

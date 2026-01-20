@@ -334,14 +334,16 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
                 <>
                   <CurrentCard game={game} wildColor={game?.wild_color} />
 
-                  <Box pos="relative" w="100%" className="my-4">
+                  {/* This box contains the player's hand of cards, as well as */}
+                  {/* a "ghost" hand used for convenience in flipping through cards */}
+                  <Box pos="relative" w="100%" className="my-4 h-[200px]">
                     <div className="absolute z-1 w-full">
                       <CardHand fan={false}>
                         {hand.sort((a,b) => {
                           return ((playableCards.includes(a) ? 1 : 0) - (playableCards.includes(b) ? 1 : 0)); 
                         }).map((cardId, index) => (
-                          <PlayingCard onClick={() => handlePlayCard(cardId)} disabled={!playableCards.includes(cardId)} key={index} clickable={true} activeHandIndex={activeHandIndex} setActiveHandIndex={setActiveHandIndex} handIndex={index}>
-                            <OhnoFace face={cardId[1]} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
+                          <PlayingCard onClick={() => handlePlayCard(cardId)} disabled={!playableCards.includes(cardId)} key={index} clickable={true} activeHandIndex={activeHandIndex} setActiveHandIndex={setActiveHandIndex} handIndex={index} my_turn={userTurn}>
+                            <OhnoFace my_turn={userTurn} face={cardId[1]} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
                           </PlayingCard>
                         ))}
                       </CardHand>
@@ -349,13 +351,45 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
                     <div className="absolute z-2 w-full pointer-events-none">
                       <CardHand fan={false}>
                         {hand.map((cardId, index) => (
-                          <PlayingCard key={index} clickable={false} ghost={true} handIndex={index} activeHandIndex={activeHandIndex}>
-                            <OhnoFace face={cardId[1]} ghost={true} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
+                          <PlayingCard key={index} clickable={false} ghost={true} handIndex={index} activeHandIndex={activeHandIndex} my_turn={userTurn}>
+                            <OhnoFace my_turn={userTurn} face={cardId[1]} ghost={true} color={cardId.startsWith('r') ? 'Red' : cardId.startsWith('b') ? 'Blue' : cardId.startsWith('g') ? 'Green' : cardId.startsWith('y') ? 'Yellow' : 'Wild'} />
                           </PlayingCard>
                         ))}
                       </CardHand>
                     </div>
+
                   </Box>
+
+                  <ArcadeButtonWide color="red" size="md" label="Draw Card" className="mt-4" callback={() => {
+                    console.log('Drawing a card...');
+                    axios.post(`draw/`, {}, {
+                      headers: {
+                        'X-CSRFToken': csrfToken,
+                      },
+                    })
+                    .then((result) => {
+                      if (result.data.game) {
+                        console.log('pass turn result.data.game', result.data.game);
+                        const { game_log, players, ...gameData } = result.data.game;
+                        setGame(gameData as OhnoGame);
+
+                        if (game_log) {
+                          setLog(game_log as GameLog[]);
+                        }
+                        
+                        if (players) {
+                          setPlayers(players as OhnoPlayer[]);
+                        }
+                      }
+                      if (result.data.log) {
+                        setLog(result.data.log as GameLog[]);
+                      }
+                    })
+                    .catch((error) => {
+                      console.error("There was an error drawing a card!", error);
+                    });
+                  }} />
+
                 </>
               )}
             </Grid.Col>

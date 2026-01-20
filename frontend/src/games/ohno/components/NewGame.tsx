@@ -18,6 +18,7 @@ const OhNoNewGame = ({ newGameOpen, setNewGameOpen, setLoading, csrfToken }: OhN
 		const inviteOnly = formData.get("invite_only") === "on";
 		const password = formData.get("password");
 
+		console.log('setting loading');
 		setLoading(true);
 
 		// Send data to backend to create new game

@@ -3,19 +3,19 @@ import type { User } from "../../../types/user";
 import type { Game } from "../../../types/game";
 import GameListing from "./GameListing";
 
-interface YourGamesProps {
+interface OpenGamesProps {
 	games: Game[];
 	moreGamesCount: number;
 	userProfile: User;
 	loading?: boolean;
 }
 
-const YourGames = ({ games, moreGamesCount, userProfile, loading = false }: YourGamesProps) => {
+const OpenGames = ({ games, moreGamesCount, userProfile, loading = false }: OpenGamesProps) => {
 	return (
-		<Card padding="md" shadow="sm" bg="yellow.2">
+		<Card padding="md" shadow="sm" bg="cyan.2">
 			<LoadingOverlay visible={loading} />
-			<Title order={3} className="text-red-500 text-center mx-auto">Your Games</Title>
-			<Text mt={8} size="sm">Ongoing games where you are a player. Jump back in!</Text>
+			<Title order={3} className="text-green-900 text-center mx-auto">Open Games</Title>
+			<Text mt={8} size="sm">Games that are open for anyone to hop in. Join the fun!</Text>
 
 			<Box h="300px" mt={8} pt={8} className="overflow-y-auto cursor-pointer">
 				{/* List user's ongoing games here */}
@@ -33,4 +33,4 @@ const YourGames = ({ games, moreGamesCount, userProfile, loading = false }: Your
 	);
 };
 
-export default YourGames;
+export default OpenGames;

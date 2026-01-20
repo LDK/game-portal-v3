@@ -15,8 +15,10 @@ interface GamePageProps {
 const GamePage = ({ title, gameId, section, csrfToken, userProfile }: GamePageProps) => {
   let mainContent = <div>Game not found.</div>;
   const gameProps = { gameId, section, csrfToken, userProfile };
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [, setImageUrl] = useState<string | null>(null);
+
+  console.log('Game Page loading state:', loading);
 
   useEffect(() => {
     if (userProfile) {
@@ -36,7 +38,7 @@ const GamePage = ({ title, gameId, section, csrfToken, userProfile }: GamePagePr
       break;
   }
 
-  return loading ? <LoadingOverlay visible={true} /> : mainContent;
+  return loading ? <LoadingOverlay visible={loading} /> : mainContent;
 };
 
 export default GamePage;
