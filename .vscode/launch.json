@@ -3,11 +3,27 @@
   "configurations": [
     {
       "name": "Launch Django",
-      "type": "python",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "/usr/local/bin/daphne",
+      "args": ["-b", "0.0.0.0", "-p", "8000", "engine.asgi:application"],
+      "django": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch Redis",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "redis-server",
+      "args": [],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch Huey",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
-      "args": ["runserver", "0.0.0.0:8000"],
-      "django": true,
+      "args": ["run_huey"],
       "console": "integratedTerminal"
     },
     {
@@ -21,7 +37,7 @@
     },
     {
       "name": "Make Migrations",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": ["makemigrations"],
@@ -30,7 +46,7 @@
     },
     {
       "name": "Run Migrations",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": ["migrate"],
@@ -39,7 +55,7 @@
     },
     {
       "name": "Create Superuser",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${workspaceFolder}/manage.py",
       "args": ["createsuperuser"],
@@ -49,8 +65,8 @@
   ],
   "compounds": [
     {
-      "name": "Launch Django + Vite",
-      "configurations": ["Launch Django", "Launch Vite"]
+      "name": "Launch Django/Redis/Huey/Vite",
+      "configurations": ["Launch Django", "Launch Huey", "Launch Vite"]
     }
   ]
 }

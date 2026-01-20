@@ -4,7 +4,7 @@
     {
       "label": "Run Django",
       "type": "shell",
-      "command": "python manage.py runserver 0.0.0.0:8000",
+      "command": "daphne -b 0.0.0.0 -p 8000 engine.asgi:application",
       "problemMatcher": []
     },
     {
@@ -17,8 +17,14 @@
       "problemMatcher": []
     },
     {
-      "label": "Run Both (Django + Vite)",
-      "dependsOn": ["Run Django", "Run Vite"],
+      "label": "Run Huey",
+      "type": "shell",
+      "command": "python manage.py run_huey",
+      "problemMatcher": []
+    },
+    {
+      "label": "Run All (Django + Vite + Huey)",
+      "dependsOn": ["Run Django", "Run Vite", "Run Huey"],
       "dependsOrder": "parallel"
     }
   ]
