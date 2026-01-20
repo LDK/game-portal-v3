@@ -1,5 +1,5 @@
 from engine.games.ohno.cards import init_cards, turnover_card
-from engine.games.ohno.logic import deal_cards, handle_card_effect, cpu_turn
+from engine.games.ohno.logic import deal_cards, get_game_state, handle_card_effect, cpu_turn
 from engine.games.util import get_cpu_name
 from engine.models.game import Game, Title, GamePlayer, GameLog
 from engine.games.ohno.serializers import GameLogSerializer, GameSerializer
@@ -8,8 +8,8 @@ from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.utils import timezone
-
 from engine.tasks import advance_until_human_turn
+from engine.games.ohno.realtime import broadcast_game_state
 
 class CreateNewGame(APIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -135,8 +135,10 @@ class StartGame(APIView):
 		game.started_at = timezone.now()
 		game.save()
 
+		broadcast_game_state(game)
+
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
+		advance_until_human_turn.schedule(args=(game.id, user_gp), delay=2.5)
 
 		game_serializer = GameSerializer(game)
 		log_serializer = GameLogSerializer(
@@ -200,7 +202,7 @@ class WildCard(APIView):
 		game = game_move(game, current_player, 'color', 'w', color=color)
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
+		advance_until_human_turn.schedule(args=(game.id,current_player), delay=2.5)
 
 		# Return the updated game state
 		game_serializer = GameSerializer(game)
@@ -243,16 +245,18 @@ class PlayCard(APIView):
 		card_id = request.data.get('card_id')
 		game = game_move(game, current_player, 'play', card_id)
 
+		broadcast_game_state(game, None)
+
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
+		advance_until_human_turn.schedule(args=(game.id,current_player), delay=2.5)
 
 		# Return the updated game state
-		game_serializer = GameSerializer(game)
+		game_state = get_game_state(game, user_profile)
 		log_serializer = GameLogSerializer(
 			GameLog.objects.filter(game=game).order_by("id"),
 			many=True
 		)
-		return Response({"game": game_serializer.data, "log": log_serializer.data}, status=status.HTTP_200_OK)
+		return Response({"game": game_state, "log": log_serializer.data}, status=status.HTTP_200_OK)
 
 class PassTurn(APIView):
 	permission_classes = [permissions.IsAuthenticated]
@@ -287,7 +291,7 @@ class PassTurn(APIView):
 		game = game_move(game, current_player, 'pass', None)
 
 		# Advance turns until it's a human player's turn
-		advance_until_human_turn.schedule(args=(game.id,), delay=2.5)
+		advance_until_human_turn.schedule(args=(game.id,current_player), delay=2.5)
 
 		# Return the updated game state
 		serializer = GameSerializer(game)

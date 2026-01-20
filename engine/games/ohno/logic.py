@@ -98,9 +98,9 @@ def get_game_state(game:Game, user:(UserProfile | None)) -> dict:
 		output = {
 				'id': game.id,
 				'starter': { "user_id": game.starter.id, "name": game.starter.display_name },
-				'created_at': game.created_at,
-				'started_at': game.started_at,
-				'ended_at': game.ended_at,
+				'created_at': datetime.strftime(game.created_at, "%Y-%m-%d %H:%M:%S"),
+				'started_at': datetime.strftime(game.started_at, "%Y-%m-%d %H:%M:%S") if game.started_at else None,
+				'ended_at': datetime.strftime(game.ended_at, "%Y-%m-%d %H:%M:%S") if game.ended_at else None,
 				'winner': winner,
 				'max_players': game.max_players,
 				'invite_only': game.invite_only,
@@ -164,7 +164,6 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 				# During the initial card turnover, it will be the player after the dealer (target player).
 				wild_player = game.current_player
 				if first_turn and wild_player:
-						print("First turn wild card, assigning to target player:", wild_player)
 						game.turn_order = wild_player.play_order
 
         # We do not advance the turn order for a wild card. That will be handled after color selection.
@@ -182,7 +181,6 @@ def handle_card_effect(card:str, game:Game, first_turn:bool = False) -> Tuple[Li
 				log_action = 'draw-four'
 				game.specifics['wild'] = True
 				game.specifics['skip_next'] = True
-				print("Setting skip_next for Wild Draw Four effect")
 				game.save()
 				for _ in range(4):
 						game = draw_card(game, target_player)

@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'huey.contrib.djhuey',
     'cloudinary',
     'cloudinary_storage',
@@ -90,7 +91,7 @@ DJANGO_VITE = {
     }
 }
 
-WSGI_APPLICATION = 'engine.wsgi.application'
+ASGI_APPLICATION = 'engine.asgi.application'
 
 CLOUDINARY_STORAGE = {
     'CLOUDINARY_URL': os.getenv('CLOUDINARY_URL'),
@@ -187,5 +188,14 @@ HUEY = {
         'periodic': True,  # Enable crontab feature.
         'check_worker_health': True,  # Enable worker health checks.
         'health_check_interval': 1,  # Check worker health every second.
+    },
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
     },
 }

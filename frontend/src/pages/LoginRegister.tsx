@@ -2,12 +2,22 @@ import { Title, Grid, Card } from "@mantine/core";
 import { Fragment } from "react/jsx-runtime";
 import { Button, Checkbox, Group, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useMemo } from "react";
 
 interface LoginRegisterPageProps {
   csrfToken: string;
 };
 
-const LoginRegisterPage = ({ csrfToken }: LoginRegisterPageProps) => {
+const LoginRegisterPage = ({ csrfToken: passedToken }: LoginRegisterPageProps) => {
+  const csrfToken = useMemo(() => {
+    if (passedToken?.length) {
+      return passedToken;
+    } else {
+      const tokenFromMeta = document.querySelector('input[name="csrfmiddlewaretoken"]')?.getAttribute('value') || '';
+      return tokenFromMeta;
+    }
+  }, [passedToken]);
+
   const form = useForm({
     mode: 'uncontrolled',
     initialValues: {

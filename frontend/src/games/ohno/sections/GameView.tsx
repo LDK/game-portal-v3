@@ -10,6 +10,7 @@ import axios from "axios";
 import LogBox from "../components/LogBox";
 import CurrentCard from "../components/CurrentCard";
 import { CardHand, PlayingCard, OhnoFace } from "../../../components/cards";
+import { useGameSocket } from "../../../hooks/useGameSocket";
 
 interface GameViewProps {
     gameId: string;
@@ -17,7 +18,6 @@ interface GameViewProps {
 };
 
 const PlayersDisplay = ({ players, reverse, turnOrder }: { players: OhnoPlayer[]; reverse: boolean; turnOrder: number }) => {
-  console.log('players', players, 'turnOrder', turnOrder);  
   return (
     <>
       <Title order={3} mb={8} className={`text-black text-left text-yellow-500 ${reverse ? 'bg-red-500' : ''}`}>Players</Title>
@@ -156,6 +156,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   const [game, setGame] = useState<OhnoGame | null>(null);
   const [activeHandIndex, setActiveHandIndex] = useState<number>(-1);
   const [lastSeenLog, setLastSeenLog] = useState<number | null>(null);
+  const [loaded, setLoaded] = useState<boolean>(false);
 
   const lastLogTs = useMemo<number | null>(() => {
     if (log.length === 0) return null;
@@ -167,6 +168,17 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
       setLastSeenLog(lastLogTs);
     }
   }, [lastLogTs, lastSeenLog]);
+
+  useGameSocket(gameId, userPlayerId || '', (msg) => {
+    console.log('WebSocket message received:', msg);
+    if (msg.game && msg.log) {
+      setGame(msg.game);
+      setLog(msg.log);
+    // } else if (msg.event === "chat.message") {
+    //   setChatMessages((prev) => [...prev, msg]);
+    }
+  });
+
 
   // const [turnOrder, setTurnOrder] = useState<number>(1);
 
@@ -243,7 +255,16 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     })
     .then((result) => {
       if (result.data.game) {
-        setGame(result.data.game as OhnoGame);
+        const { game_log, players, ...gameData } = result.data.game;
+        setGame(gameData as OhnoGame);
+
+        if (game_log) {
+          setLog(game_log as GameLog[]);
+        }
+        
+        if (players) {
+          setPlayers(players as OhnoPlayer[]);
+        }
       }
       if (result.data.log) {
         setLog(result.data.log as GameLog[]);
@@ -257,7 +278,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
   useEffect(() => {
     const fetchGameData = async () => {
       // Placeholder for fetching game data logic
-      fetch(`info/`).then(response => response.json()).then(data => {
+      fetch('info/').then(response => response.json()).then(data => {
         const { game_log, players, ...gameData } = data;
 
         if (gameData.user_player_id) {
@@ -279,11 +300,13 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
         if (players) {
           setPlayers(players as OhnoPlayer[]);
         }
+
         setGame(gameData as OhnoGame);
+        setLoaded(true);
       });
     };
 
-    if (gameId) {
+    if (gameId && !loaded) {
       fetchGameData();
     }
     // const interval = setInterval(() => {
@@ -292,44 +315,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
     //   }
     // }, 5000);
     // return () => clearInterval(interval);
-  }, [gameId, log]);
-
-  // Fetch game data every 2 seconds once the game has started
-  useEffect(() => {
-    if (!game || !game.started_at) return;
-
-    const interval = setInterval(() => {
-      const fetchGameData = async () => {
-        fetch(`info/`).then(response => response.json()).then(data => {
-          const { game_log, players, ...gameData } = data;
-
-          if (gameData.user_player_id) {
-            setUserPlayerId(gameData.user_player_id);
-          }
-
-          if (game_log) {
-            const data_latest_ts = game_log.length > 0 ? game_log[game_log.length - 1].timestamp : null;
-            const latest_log_ts = log.length > 0 ? log[log.length - 1].timestamp : null;
-
-            // Only update log if there's new data
-            if ((data_latest_ts && latest_log_ts && data_latest_ts > latest_log_ts) || !latest_log_ts) {
-              setLog(game_log as GameLog[]);
-            }
-          } else {
-            setLog(game_log as GameLog[]);
-          }
-
-          if (players) {
-            setPlayers(players as OhnoPlayer[]);
-          }
-          setGame(gameData as OhnoGame);
-        });
-      };
-
-      fetchGameData();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [game, log]);
+  }, [gameId, log, loaded]);
 
   return (
     <Fragment>

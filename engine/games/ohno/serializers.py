@@ -28,6 +28,7 @@ class GameSerializer(serializers.ModelSerializer):
 class GameLogSerializer(serializers.ModelSerializer):
 	player = serializers.CharField(source='player.user.display_name', read_only=True)
 	cpu_name = serializers.CharField(source='player.cpu_name', read_only=True)
+	timestamp = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", read_only=True)
 
 	class Meta:
 		model = GameLog
