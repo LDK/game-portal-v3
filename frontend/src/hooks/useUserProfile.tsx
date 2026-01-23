@@ -7,7 +7,13 @@ const useUserProfile = () => {
   useEffect(() => {
     fetch("/api/userprofiles/me/")
       .then((res) => res.json())
-      .then((data) => setProfile(data))
+      .then((data) => {
+        if (data.id) {
+          setProfile(data)
+        } else {
+          setProfile(null);
+        }
+      })
       .catch((err) => console.error("Error fetching user profile:", err));
   }, []);
 

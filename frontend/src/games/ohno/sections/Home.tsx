@@ -78,6 +78,7 @@ const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
             </a>
           </Grid.Col>
         </Grid>
+
         <Card mt={12}>
           <Text>
             Welcome to a classic, fast-paced card game where you'll match colors and numbers while
@@ -91,34 +92,35 @@ const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
             one card left. (Although nobody can hear you through the internet...)
           </Text>
           <Box className="w-full justify-end text-right">
-            <ArcadeButton color="green" size="lg" label={<>NEW<br />GAME</>} className="mt-12" callback={() => {
-              setNewGameOpen(true);
-            }} />
+            {userProfile && (
+              <ArcadeButton color="green" size="lg" label={<>NEW<br />GAME</>} className="mt-12" callback={() => {
+                setNewGameOpen(true);
+              }} />
+            )}
           </Box>
         </Card>
       </Box>
       
       <Box pb={12} pos="relative">
-        <Grid gutter="md">
-          <Grid.Col span={{ base: 12, sm: 4 }} className="text-left relative">
-            {userProfile && (<>
+        {userProfile && (
+          <Grid gutter="md">
+            <Grid.Col span={{ base: 12, sm: 4 }} className="text-left relative">
               <YourGames {...{ games: userGames, userProfile, moreGamesCount: moreYourGamesCount, loading: loadingYour }} />
-            </>)}
-          </Grid.Col>
+            </Grid.Col>
 
-          <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
-            {userProfile && (<>
+            <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
               <OpenGames {...{ games: openGames, userProfile, moreGamesCount: moreOpenGamesCount, loading: loadingOpen }} />
-            </>)}
-          </Grid.Col>
+            </Grid.Col>
 
-          <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
-            <Card padding="md" shadow="sm">
-              <Title order={3} className="text-yellow-500">Easy to Learn</Title>
-              <Text mt={8}>Simple rules make it accessible for everyone.</Text>
-            </Card>
-          </Grid.Col>
-        </Grid>
+            <Grid.Col span={{ base: 12, sm: 4 }} className="text-center">
+              {/* Todo: Replace this placeholder with PastOpponents */}
+              <Card padding="md" shadow="sm">
+                <Title order={3} className="text-yellow-500">Easy to Learn</Title>
+                <Text mt={8}>Simple rules make it accessible for everyone.</Text>
+              </Card>
+            </Grid.Col>
+          </Grid>
+        )}
       </Box>
     </SolidSection>
   );

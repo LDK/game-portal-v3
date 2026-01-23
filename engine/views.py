@@ -53,6 +53,12 @@ def register(request):
 		user_profile.user = user
 		user_profile.secret_key = generate_user_secret_key()
 		user_profile.save()
+
+		# Log the user in after registration
+		from django.contrib.auth import login
+		login(request, user)
+
+		# Redirect to index after successful registration
 		return redirect("index")
 	else:
 		return redirect("login_or_register")
