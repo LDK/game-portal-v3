@@ -1,4 +1,4 @@
-import { Box, Card, Text, Title, Grid, LoadingOverlay } from "@mantine/core";
+import { Box, Card, Text, Title, Grid } from "@mantine/core";
 import { ArcadeButton } from "../../../components/buttons/ArcadeButton";
 import NewGame from "../components/NewGame";
 import { useEffect, useState } from "react";
@@ -15,7 +15,6 @@ interface OhnoHomeProps {
 
 const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
   const [newGameOpen, setNewGameOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [loadingYour, setLoadingYour] = useState(false);
   const [loadingOpen, setLoadingOpen] = useState(false);
   const [userGames, setUserGames] = useState<Game[]>([]);
@@ -64,8 +63,7 @@ const OhnoHome = ({ csrfToken, userProfile }: OhnoHomeProps) => {
 
   return (
     <SolidSection color="blue" colorLevel={7}>
-      <NewGame {...{ newGameOpen, setNewGameOpen, setLoading, csrfToken }} />
-      <LoadingOverlay visible={loading} />
+      <NewGame {...{ newGameOpen, setNewGameOpen, csrfToken }} />
 
       <Box py={12}>
         <Grid align="center" gutter="md">

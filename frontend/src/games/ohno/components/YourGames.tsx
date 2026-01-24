@@ -1,7 +1,8 @@
-import { Box, Card, LoadingOverlay, Text, Title } from "@mantine/core";
+import { Box, Card, Text, Title } from "@mantine/core";
 import type { User } from "../../../types/user";
 import type { Game } from "../../../types/game";
 import GameListing from "./GameListing";
+import LoadingOverlay from "../../../components/LoadingOverlay";
 
 interface YourGamesProps {
 	games: Game[];
@@ -13,7 +14,7 @@ interface YourGamesProps {
 const YourGames = ({ games, moreGamesCount, userProfile, loading = false }: YourGamesProps) => {
 	return (
 		<Card padding="md" shadow="sm" bg="yellow.2">
-			<LoadingOverlay visible={loading} />
+			<LoadingOverlay visible={loading} color1="yellow" color2="orange" />
 			<Title order={3} className="text-red-500 text-center mx-auto">Your Games</Title>
 			<Text mt={8} size="sm">Ongoing games where you are a player. Jump back in!</Text>
 

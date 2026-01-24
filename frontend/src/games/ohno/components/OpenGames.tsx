@@ -1,7 +1,8 @@
-import { Box, Card, LoadingOverlay, Text, Title } from "@mantine/core";
+import { Box, Card, Text, Title } from "@mantine/core";
 import type { User } from "../../../types/user";
 import type { Game } from "../../../types/game";
 import GameListing from "./GameListing";
+import LoadingOverlay from "../../../components/LoadingOverlay";
 
 interface OpenGamesProps {
 	games: Game[];
@@ -13,7 +14,7 @@ interface OpenGamesProps {
 const OpenGames = ({ games, moreGamesCount, userProfile, loading = false }: OpenGamesProps) => {
 	return (
 		<Card padding="md" shadow="sm" bg="cyan.2">
-			<LoadingOverlay visible={loading} />
+			<LoadingOverlay visible={loading} color1="teal" color2="cyan" />
 			<Title order={3} className="text-green-900 text-center mx-auto">Open Games</Title>
 			<Text mt={8} size="sm">Games that are open for anyone to hop in. Join the fun!</Text>
 

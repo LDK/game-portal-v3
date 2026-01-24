@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import OhNo from "../games/ohno";
 import type { User } from "../types/user";
-import { LoadingOverlay } from "@mantine/core";
+import LoadingOverlay from "../components/LoadingOverlay";
 
 interface GamePageProps {
   title: string;

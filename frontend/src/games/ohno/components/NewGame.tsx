@@ -5,11 +5,10 @@ import axios from "axios";
 interface OhNoNewGameProps {
 	newGameOpen: boolean;
 	setNewGameOpen: (open: boolean) => void;
-	setLoading: (loading: boolean) => void;
 	csrfToken: string;
 }
 
-const OhNoNewGame = ({ newGameOpen, setNewGameOpen, setLoading, csrfToken }: OhNoNewGameProps) => {
+const OhNoNewGame = ({ newGameOpen, setNewGameOpen, csrfToken }: OhNoNewGameProps) => {
 	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
 
@@ -17,9 +16,6 @@ const OhNoNewGame = ({ newGameOpen, setNewGameOpen, setLoading, csrfToken }: OhN
 		const maxPlayers = formData.get("max_players");
 		const inviteOnly = formData.get("invite_only") === "on";
 		const password = formData.get("password");
-
-		console.log('setting loading');
-		setLoading(true);
 
 		// Send data to backend to create new game
 		axios.post("/ohno/new/", {
@@ -35,14 +31,13 @@ const OhNoNewGame = ({ newGameOpen, setNewGameOpen, setLoading, csrfToken }: OhN
 			const gameId = response.data.id;
 			window.location.href = `/ohno/game/${gameId}/`;
 		}).catch((error) => {
-			setLoading(false);
 			// Handle error (e.g., show notification)
 			console.error("Error creating game:", error);
 		});
 	};
 
 	return (
-		<Modal opened={newGameOpen} onClose={() => {}} title="Create New Game of Oh No!">
+		<Modal opened={newGameOpen} onClose={() => setNewGameOpen(false)} title="Create New Game of Oh No!">
 			<form method="POST" onSubmit={handleSubmit}>
 				<Select
 					name="max_players"
