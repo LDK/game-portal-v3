@@ -55,6 +55,67 @@ const HomePage = ({ userProfile }: HomePageProps) => {
     </Box>
   );
 
+  const YourMostPlayed = () => (
+    <Grid.Col span={{ base: 12, sm: 4 }}>
+      <Card bg="yellow.3" padding="md" shadow="sm" h="100%">
+        <CardTitle className="text-green-700">Your Most Played</CardTitle>
+        <Text mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">The games that keep bringing you back!</Text>
+
+        {userProfile?.most_played_titles && userProfile.most_played_titles.length > 0 ? (
+          userProfile.most_played_titles.slice(0, 5).map(({ title, count }) => (
+            <StatTitleListing key={title.id} title={title} color="black">
+              Played {count} times
+            </StatTitleListing>
+          ))
+        ) : (
+          <Text mt={8} size="sm">You haven't played any games yet. Start playing to see your most played titles here!</Text>
+        )}
+      </Card>
+    </Grid.Col>
+  );
+
+  const MostPopular = () => (
+    <Grid.Col span={{ base: 12, sm: 4 }}>
+      <Card bg="blue.5" padding="md" shadow="sm" h="100%">
+        {statsLoading && <LoadingOverlay visible={true} />}
+        <CardTitle className="text-yellow-200">Most Popular</CardTitle>
+        <Text c="white" mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">The titles with the most game played across our system!</Text>
+        {stats?.most_played_titles && stats.most_played_titles.length > 0 ? (
+            stats.most_played_titles.slice(0, 5).map((title) => (
+              <StatTitleListing key={title.id} title={title} color="white">
+                Played {title.games_played} times
+              </StatTitleListing>
+            ))
+          ) : (
+            <Text mt={8} size="sm">No popular titles data available.</Text>
+          )
+        }
+      </Card>
+    </Grid.Col>
+  );
+
+  const NewestTitles = () => (
+    <Grid.Col span={{ base: 12, sm: 4 }}>
+      <Card bg="orange.5" padding="md" shadow="sm" h="100%">
+        {statsLoading && <LoadingOverlay visible={true} />}
+        <CardTitle>Newest Titles</CardTitle>
+        <Text mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">See which games have just been released here on Rainy Day!</Text>
+
+        {stats?.newest_titles && stats.newest_titles.length > 0 ? (
+            stats.newest_titles.slice(0, 5).map((title) => (
+              <StatTitleListing key={title.id} title={title} color="black">
+                Released on {new Date(title.release_date).toLocaleDateString()}
+              </StatTitleListing>
+            ))
+          ) : (
+            <Text mt={8} size="sm">No new titles data available.</Text>
+          )
+        }
+
+      </Card>
+    </Grid.Col>
+  );
+
   return (
     <Fragment>
       <FeltSection color="green" colorLevel={9}>
@@ -73,60 +134,9 @@ const HomePage = ({ userProfile }: HomePageProps) => {
         {userProfile && (
           <Box pb={12}>
             <Grid gutter="md">
-              <Grid.Col span={{ base: 12, sm: 4 }} className="text-left">
-                <Card bg="yellow.3" padding="md" shadow="sm" h="100%">
-                  <CardTitle className="text-green-700">Your Most Played</CardTitle>
-                  <Text mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">The games that keep bringing you back!</Text>
-
-                  {userProfile.most_played_titles && userProfile.most_played_titles.length > 0 ? (
-                    userProfile.most_played_titles.slice(0, 5).map(({ title, count }) => (
-                      <StatTitleListing key={title.id} title={title} color="black">
-                        Played {count} times
-                      </StatTitleListing>
-                    ))
-                  ) : (
-                    <Text mt={8} size="sm">You haven't played any games yet. Start playing to see your most played titles here!</Text>
-                  )}
-                </Card>
-              </Grid.Col>
-
-              <Grid.Col span={{ base: 12, sm: 4 }}>
-                <Card bg="blue.5" padding="md" shadow="sm" h="100%">
-                  {statsLoading && <LoadingOverlay visible={true} />}
-                  <CardTitle className="text-yellow-200">Most Popular</CardTitle>
-                  <Text c="white" mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">The titles with the most game played across our system!</Text>
-                  {stats?.most_played_titles && stats.most_played_titles.length > 0 ? (
-                      stats.most_played_titles.slice(0, 5).map((title) => (
-                        <StatTitleListing key={title.id} title={title} color="white">
-                          Played {title.games_played} times
-                        </StatTitleListing>
-                      ))
-                    ) : (
-                      <Text mt={8} size="sm">No popular titles data available.</Text>
-                    )
-                  }
-                </Card>
-              </Grid.Col>
-
-              <Grid.Col span={{ base: 12, sm: 4 }}>
-                <Card bg="orange.5" padding="md" shadow="sm" h="100%">
-                  {statsLoading && <LoadingOverlay visible={true} />}
-                  <CardTitle>Newest Titles</CardTitle>
-                  <Text mt={8} mih={{ xs: "40px", sm: "62px" }} size="sm">See which games have just been released here on Rainy Day!</Text>
-
-                  {stats?.newest_titles && stats.newest_titles.length > 0 ? (
-                      stats.newest_titles.slice(0, 5).map((title) => (
-                        <StatTitleListing key={title.id} title={title} color="black">
-                          Released on {new Date(title.release_date).toLocaleDateString()}
-                        </StatTitleListing>
-                      ))
-                    ) : (
-                      <Text mt={8} size="sm">No new titles data available.</Text>
-                    )
-                  }
-
-                </Card>
-              </Grid.Col>
+              <MostPopular />
+              <NewestTitles />
+              <YourMostPlayed />
             </Grid>
           </Box>
         )}
