@@ -85,23 +85,35 @@ interface OhnoFaceProps {
 
 export function OhnoFace({ face = 'w', color = 'Wild', ghost = false, my_turn = false }: OhnoFaceProps) {
   let titleText = '';
-  let colorStyle = 'border-black'
+  let titleOrder = 1;
+  let titleRotation = 0;
+  let colorStyle = 'border-black';
+  let textColor = 'text-black';
+
+  let cornerText = face.toUpperCase();
 
   switch (face) {
     case 's':
-      titleText = 'SKIP';
+      titleText = 'SKIP!';
+      titleRotation = -45;
       break;
     case 'r':
       titleText = 'REVERSE';
+      titleOrder = 2;
+      titleRotation = -45;
       break;
-    case 'd2':
+    case 'd':
       titleText = 'DRAW TWO';
+      titleOrder = 2;
       break;
-    case 'd4':
+    case 'x':
       titleText = 'DRAW FOUR';
+      titleOrder = 2;
+      cornerText = 'W';
       break;
     case 'w':
       titleText = 'WILD';
+      titleRotation = -45;
       break;
     default:
       titleText = face;
@@ -111,22 +123,25 @@ export function OhnoFace({ face = 'w', color = 'Wild', ghost = false, my_turn = 
   switch (color) {
     case 'Red':
       colorStyle = 'var(--color-red-500)';
+      textColor = 'text-red-600';
       break;
     case 'Yellow':
       colorStyle = 'var(--color-yellow-500)';
+      textColor = 'text-yellow-600';
       break;
     case 'Green':
       colorStyle = 'var(--color-green-500)';
+      textColor = 'text-green-600';
       break;
     case 'Blue':
       colorStyle = 'var(--color-cyan-500)';
+      textColor = 'text-cyan-600';
       break;
     default:
       colorStyle = 'var(--color-black)';
+      textColor = 'text-black';
       break;
   }
-
-  const cornerText = face.toUpperCase();
 
   return (
     <Card p={16} className={`w-full relative h-full ${colorStyle} rounded-lg shadow-lg transform transition-transform duration-500`}
@@ -138,13 +153,21 @@ export function OhnoFace({ face = 'w', color = 'Wild', ghost = false, my_turn = 
 
       <Box bg="white" className="w-full h-full relative">
         <div className="absolute top-2 left-2 backface-hidden flex flex-col items-center justify-center">
-          <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
+          <Title order={2} className={`text-4xl ${textColor}`}>{cornerText}</Title>
         </div>
         <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center">
-          <Title component="h1" fz="h1" fw={700} ff="Raleway" order={3} className="text-4xl text-sky-600">{titleText}</Title>
+          <Title 
+            component="h1"
+            order={titleOrder as 1 | 2 | 3}
+            fw={700}
+            ff="Raleway"
+            className={textColor}
+            style={{ transform: `rotate(${titleRotation}deg)` }}>
+              {titleText}
+            </Title>
         </div>
         <div className="absolute bottom-2 right-2 backface-hidden flex flex-col items-center justify-center">
-          <Title order={2} className="text-4xl text-sky-600">{cornerText}</Title>
+          <Title order={2} className={`text-4xl ${textColor}`}>{cornerText}</Title>
         </div>
         <div className="absolute inset-0 backface-hidden flex flex-col items-center justify-center"
           style={{ transform: 'rotateY(180deg)' }}
