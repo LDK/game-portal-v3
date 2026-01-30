@@ -135,3 +135,61 @@ class SystemStatsView(APIView):
             "most_played_titles": serialized_most_played,
             "newest_titles": serialized_newest
         }, status=status.HTTP_200_OK)
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class WhosOnline(APIView):
+    permission_classes = []
+
+    def get(self, request):
+        import redis
+        r = redis.Redis(host="localhost", port=6379, db=0)
+
+        # Get all connected users by scanning conn keys
+        # For small dev loads, KEYS is ok. For bigger, use scan_iter.
+        conn_ids = []
+        for key in r.scan_iter("presence:conn:*"):
+            # key is bytes like b'presence:conn:42'
+            uid = key.decode().split(":")[-1]
+            conn_ids.append(int(uid))
+
+        active_ids = set()
+        for key in r.scan_iter("presence:active:*"):
+            uid = key.decode().split(":")[-1]
+            active_ids.add(int(uid))
+
+        users = User.objects.filter(id__in=conn_ids).values("id", "username")
+
+        # out stores the final output
+        out = []
+        
+        # pipe (pipeline) for fetching last URLs
+        pipe = r.pipeline()
+
+        for u in users:
+            status = "active" if u["id"] in active_ids else "idle"
+            profile = UserProfile.objects.filter(user_id=u["id"]).first()
+            presence_key = f"presence:url:{u['id']}"
+            pipe.get(presence_key)
+
+            if profile and profile.public_listing:
+                display = profile.display_name or u["username"]
+                out.append({"display": display, "status": status})
+            else:
+                out.append({"username": "Anonymous", "display": "Anonymous", "status": status})
+
+        urls = pipe.execute()
+
+        if urls and out:
+            for i in range(len(out)):
+                out[i]["last_url"] = urls[i].decode() if urls[i] else ""
+
+        # sort: active first, then idle; current user first within each
+        def sort_key(u):
+            status_rank = 0 if u["status"] == "active" else 1
+            return (status_rank, u["display"].lower())
+
+        out.sort(key=sort_key)
+        return Response({"online": out})

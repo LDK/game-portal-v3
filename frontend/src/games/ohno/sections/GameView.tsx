@@ -319,7 +319,7 @@ const GameView = ({ gameId, csrfToken }: GameViewProps) => {
 
   return (
     <Fragment>
-      {userPlayer && <WildModal player={userPlayer} hand={hand} csrfToken={csrfToken} opened={game?.wild} />}
+      {userPlayer && <WildModal player={userPlayer} hand={hand} csrfToken={csrfToken} opened={game?.wild && userTurn} />}
       <Text c="yellow" component="a" href="/ohno/" className="text-white hover:underline hover:text-yellow-400">
         &laquo; Back to Oh No! Home
       </Text>

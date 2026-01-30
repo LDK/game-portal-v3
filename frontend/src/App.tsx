@@ -15,6 +15,7 @@ import { ToastContainer } from "react-toastify";
 import GamePage from "./pages/Game";
 import SideMenu from "./components/SideMenu";
 import useUserProfile from "./hooks/useUserProfile";
+import { usePresenceSocket } from "./hooks/usePresenceSocket";
 
 function App() {
   const rootElement = document.getElementById("root")!;
@@ -32,6 +33,9 @@ function App() {
   const section = rootElement.getAttribute("data-section") || undefined;
 
   const userProfile = useUserProfile();
+
+  // This hook manages presence websocket connection and activity pings to track connected/idle status
+  usePresenceSocket();
 
   switch (page) {
     case "login":

@@ -1,4 +1,4 @@
-# engine/consumers.py
+# engine/consumers/game.py
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 class GameConsumer(AsyncJsonWebsocketConsumer):
@@ -32,7 +32,6 @@ class GamePlayerConsumer(AsyncJsonWebsocketConsumer):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
         self.player_id = self.scope["url_route"]["kwargs"]["player_id"]
         self.group_name = f"game_{self.game_id}_player_{self.player_id}"
-        print("group name", self.group_name)
 
         # Join group
         await self.channel_layer.group_add(self.group_name, self.channel_name)
@@ -42,7 +41,6 @@ class GamePlayerConsumer(AsyncJsonWebsocketConsumer):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def game_update_public(self, event):
-        print(22)
         # Called when we send group message
         await self.send_json(event["data"])
 
